@@ -1,0 +1,85 @@
+﻿@using SACA_Common.Enums
+@model SACA_Common.DTOs.Contest.Response.ContestFormView
+
+@{
+    var isViewOnly = (bool)(ViewData["IsViewOnly"] ?? false);
+}
+
+<div class="gap-4 text-black bg-white p-6 grid grid-cols-4 rounded">
+    <!-- Contest type -->
+    <div class="flex flex-col">
+        <label asp-for="contest_type" class="text-gray-700 font-medium"></label>
+        <select asp-for="contest_type" asp-items="Html.GetEnumSelectList<eType_Contest>()" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:bg-[rgba(239,239,239,0.3)]" disabled="@(isViewOnly == true)"></select>
+        <span asp-validation-for="contest_type" class="text-red-500 text-sm"></span>
+    </div>
+
+    <!-- Grading type -->
+    <div class="flex flex-col">
+        <label asp-for="grading_type" class="text-gray-700 font-medium"></label>
+        <select asp-for="grading_type" asp-items="Html.GetEnumSelectList<eType_Grading>()" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:bg-[rgba(239,239,239,0.3)]" disabled="@(isViewOnly == true)"></select>
+        <span asp-validation-for="grading_type" class="text-red-500 text-sm"></span>
+    </div>
+
+    <div class="flex flex-col gap-y-2">
+        <span class="text-gray-700 font-medium">Checking rules</span>
+        <div class="flex gap-x-4">
+            <!-- Leaderboard enabled -->
+            <div class="flex">
+                <div class="flex items-center gap-x-1">
+                    <input asp-for="leaderboard_enabled" class="w-4 h-4 p-2 rounded-lg border hover:ring-2 hover:ring-blue-500 hover:outline-none accent-blue-500" disabled="@(isViewOnly == true)" />
+                    <label asp-for="leaderboard_enabled" class="text-gray-700 font-medium text-nowrap"></label>
+                </div>
+                <span asp-validation-for="leaderboard_enabled" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Plagiarism enabled -->
+            <div class="flex">
+                <div class="flex items-center gap-x-1">
+                    <input asp-for="plagiarism_detection_enabled" class="w-4 h-4 p-2 rounded-lg border hover:ring-2 hover:ring-blue-500 hover:outline-none accent-blue-500" disabled="@(isViewOnly == true)" />
+                    <label asp-for="plagiarism_detection_enabled" class="text-gray-700 font-medium text-nowrap"></label>
+                </div>
+                <span asp-validation-for="plagiarism_detection_enabled" class="text-red-500 text-sm"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var isViewOnly = @(isViewOnly.ToString().ToLower());
+
+    $(document).ready(function () {
+        function updateSettings() {
+            let settings = {
+                contest_type: Number($("#contest_type").val()),
+                grading_type: Number($("#grading_type").val()),
+                leaderboard_enabled: $("#leaderboard_enabled").prop("checked"),
+                plagiarism_detection_enabled: $("#plagiarism_detection_enabled").prop("checked")
+            };
+
+            $("#settingsData").val(JSON.stringify(settings));
+        }
+
+        function updateLeaderboardState() {
+            let gradingType = Number($("#grading_type").val());
+            if (gradingType === 1) {
+                $("#leaderboard_enabled").prop("checked", false);
+                $("#leaderboard_enabled").prop("disabled", true);
+            } else {
+                if (!isViewOnly) {
+                    $("#leaderboard_enabled").prop("disabled", false);
+                }
+            }
+        }
+
+
+        $("#contest_type, #grading_type, #leaderboard_enabled, #plagiarism_detection_enabled").on("change", () => {
+            updateSettings();
+            updateLeaderboardState();
+        });
+        $("#contestDetailForm").on("submit", function () {
+            updateSettings();
+        });
+        updateSettings();
+        updateLeaderboardState();
+    });
+</script>

@@ -1,0 +1,30 @@
+﻿@{
+    Layout = "~/Views/Shared/Modals/_BaseModal.cshtml";
+    ViewData["ModalId"] = "problemDeleteModal";
+    ViewData["Title"] = "Are you sure you want to delete this problem?";
+    ViewData["SubmitButtonId"] = "deleteProblemBtn";
+    ViewData["ShowSubmitButton"] = true;
+}
+
+<script>
+    $(document).ready(function () {
+        document.querySelector("#deleteProblemBtn").addEventListener("click", function(){
+            deleteProblem('@ViewData["ProblemID"]');
+        })
+    });
+
+    function deleteProblem(problemID) {
+        problemsArray = problemsArray.filter((m, index) => {
+            if (m.id === null) {
+                return index != problemID; // Remove if index matches problemID
+            }
+            return m.id !== problemID; // Otherwise, check by ID
+        });
+        // Update hidden input
+        document.querySelector("#problemsData").value = JSON.stringify(problemsArray);
+        //Update table
+        fetchProblemsTabWithPage(1, 1000);
+
+        closeModal("problemDeleteModal");
+    }
+</script>

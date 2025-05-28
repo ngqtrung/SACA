@@ -1,0 +1,79 @@
+﻿@{
+    Layout = "~/Views/Shared/Modals/_BaseModal.cshtml";
+    ViewData["ModalId"] = "testcaseDetailModal";
+    ViewData["Title"] = "Detail Testcase Modal";
+    ViewData["Size"] = "lg";
+}
+@model SACA_Common.DTOs.TestCase.Response.TestCaseFormView
+<div id="testcaseForm">
+    <div class="grid grid-cols-6 gap-4 text-black bg-white p-6 rounded">
+        @* <!-- Testcase ID -->
+        <input type="hidden" asp-for="id" />
+        <!-- Problem ID -->
+        <input type="hidden" asp-for="problem_id" /> *@
+        <!-- Testcase Code -->
+        <div class="flex flex-col col-span-2">
+            <label asp-for="code" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="code" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Score -->
+        <div class="flex flex-col col-span-2">
+            <label asp-for="score" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="score" type="number" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Input -->
+        <div class="flex flex-col col-span-6">
+            <label asp-for="input" class="text-gray-700 font-medium required-field"></label>
+            @* <input asp-for="input" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled /> *@
+            <textarea asp-for="input" rows="5" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-100" disabled></textarea>
+        </div>
+
+        <!-- Output -->
+        <div class="flex flex-col col-span-6">
+            <label asp-for="output" class="text-gray-700 font-medium required-field"></label>
+            @* <input asp-for="output" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled /> *@
+            <textarea asp-for="output" rows="5" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-100" disabled></textarea>
+        </div>
+
+        <!-- Testcase Type -->
+        <div class="flex flex-col col-span-2">
+            <label asp-for="testcase_type" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="testcase_type" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+            <span asp-validation-for="testcase_type" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Execution Time -->
+        <div class="flex flex-col col-span-2">
+            <label asp-for="execution_time" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="execution_time" type="number" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+            <span asp-validation-for="execution_time" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Memory Limit -->
+        <div class="flex flex-col col-span-2">
+            <label asp-for="memory_limit" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="memory_limit" type="number" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Description -->
+        <div class="flex flex-col col-span-6">
+            <label asp-for="description" class="text-gray-700 font-medium"></label>
+            <textarea asp-for="description" id="descriptionTC" class="hidden"></textarea>
+            <div id="descriptionTCDisplay" class="border-gray-400 p-2 rounded-lg border bg-gray-50">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    $(document).ready(function () {
+        let descriptionValue = $('#descriptionTC').val();
+        if(!descriptionValue){
+            descriptionValue = "N/A No description available"
+        }
+        $('#descriptionTCDisplay').html(descriptionValue);
+    });
+</script>

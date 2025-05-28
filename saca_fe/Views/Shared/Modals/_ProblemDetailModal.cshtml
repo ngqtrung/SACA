@@ -1,0 +1,123 @@
+﻿@{
+    Layout = "~/Views/Shared/Modals/_BaseModal.cshtml";
+    ViewData["ModalId"] = "problemDetailModal";
+    ViewData["Title"] = "Detail Problem Modal";
+    ViewData["Size"] = "lg";
+}
+@model SACA_Common.DTOs.Problem.Response.ProblemFormView
+<div id="">
+    <div class="gap-4 text-black bg-white p-6 grid grid-cols-6 rounded">
+        @* <!-- Problem INDEX (in problemsArray) -->
+        <input type="hidden" id="problem_index" name="index" disabled />
+        <!-- Problem ID -->
+        <input type="hidden" asp-for="id" />
+        <!-- Contest ID -->
+        <input type="hidden" asp-for="contest_id" /> *@
+        <!-- Problem Code -->
+        <div class="col-span-2 flex flex-col">
+            <label asp-for="code" class="text-gray-700 required-field font-medium"></label>
+            <input asp-for="code" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Name -->
+        <div class="col-span-4 flex flex-col">
+            <label asp-for="title" class="text-gray-700 required-field font-medium"></label>
+            <input asp-for="title" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Description -->
+        <div class="col-span-6 flex flex-col">
+            <label asp-for="description" class="text-gray-700 font-medium"></label>
+            <textarea asp-for="description" id="descriptionProblem" class="hidden"></textarea>
+            <div id="descriptionProblemDisplay" class="border-gray-400 p-2 rounded-lg border bg-gray-50">
+            </div>
+        </div>
+
+        <!-- Note -->
+        <div class="col-span-6 flex flex-col">
+            <label asp-for="note" class="text-gray-700 font-medium"></label>
+            <input asp-for="note" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Tags -->
+        <div class="col-span-2 flex flex-col">
+            <label asp-for="tags" class="text-gray-700 font-medium"></label>
+            <input asp-for="tags" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Execution Time -->
+        <div class="flex flex-col">
+            <label asp-for="default_execution_time" class="text-gray-700 font-medium"></label>
+            <input asp-for="default_execution_time" type="number" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Memory Limit -->
+        <div class="flex flex-col">
+            <label asp-for="default_memory_limit" class="text-gray-700 font-medium"></label>
+            <input asp-for="default_memory_limit" type="number" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Score -->
+        <div class="flex flex-col">
+            <label asp-for="score" class="text-gray-700 required-field font-medium"></label>
+            <input asp-for="score" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Max atttempts -->
+        <div class="flex flex-col">
+            <label asp-for="max_attempts" class="text-gray-700 font-medium"></label>
+            <input asp-for="max_attempts" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Files -->
+        <div class="col-span-6 flex flex-col">
+            <label asp-for="file_id" class="text-gray-700 font-medium">Given material</label>
+            <input asp-for="file_id" type="hidden" id="fileIdContainer" />
+            <div id="downloadLinkContainer" class="mt-1">
+                <span class="text-gray-400 text-sm">No file uploaded.</span>
+            </div>
+
+            
+        </div>
+    </div>
+    <div id="testcases">
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        const descriptionValue = $('#descriptionProblem').val();
+        $('#descriptionProblemDisplay').html(descriptionValue);
+    });
+</script>
+<script>
+    let problemIndex = -1;
+
+    $(document).ready(function () {
+        problemIndex = document.getElementById("problem_index").getAttribute("value");
+        fetchTestcasesTabWithPage(1);
+    });
+</script>
+
+<script>
+    function updateDownloadLink() {
+        const fileId = document.getElementById('fileIdContainer').value;
+        const container = document.getElementById('downloadLinkContainer');
+
+        if (fileId) {
+            container.innerHTML = `
+                <a href="/Files/Download?file_id=${encodeURIComponent(fileId)}"
+                   class="text-blue-600 hover:underline break-all">
+                    Download given material
+                </a>
+            `;
+        } else {
+            container.innerHTML = `
+                <span class="text-gray-400 text-sm">No file uploaded.</span>
+            `;
+        }
+    }
+
+    $(document).ready(function () {
+        updateDownloadLink();
+    });
+</script>

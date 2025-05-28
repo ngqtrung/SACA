@@ -1,0 +1,30 @@
+﻿@{
+    Layout = "~/Views/Shared/Modals/_BaseModal.cshtml";
+    ViewData["ModalId"] = "memberDeleteModal";
+    ViewData["Title"] = "Are you sure you want to delete this member?";
+    ViewData["SubmitButtonId"] = "deleteMemberBtn";
+    ViewData["ShowSubmitButton"] = true;
+}
+
+<script>
+    $(document).ready(function () {
+        document.querySelector("#deleteMemberBtn").addEventListener("click", function(){
+            deleteMember('@ViewData["MemberID"]');
+        })
+    });
+    
+    function deleteMember(memberID) {
+        membersArray = membersArray.filter((m, index) => {
+            if (m.id === null) {
+                return index != memberID; // Remove if index matches memberID
+            }
+            return m.id !== memberID; // Otherwise, check by ID
+        });
+        // Update hidden input
+        document.querySelector("#membersData").value = JSON.stringify(membersArray);
+        //Update table
+        fetchMembersTabWithPage(1, 1000);
+
+        closeModal("memberDeleteModal");
+    }
+</script>

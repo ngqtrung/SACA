@@ -1,0 +1,96 @@
+﻿﻿@using SACA_Common.DTOs
+@using SACA_Common.DTOs.Problem.Response
+@using SACA_Common.Enums
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+﻿@{
+    ViewData["Title"] = "Contest Detail";
+    Layout = "_Layout";
+    ViewBag.ShowNavTab = true;
+    ViewBag.ActiveTab = "problems";
+    string? keyword = Context.Request.Query["keyword"];
+}
+@* @model ContestView? *@
+@model PagedResponse<ProblemTableView>
+@section BootstrapStyles {
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+}
+<div>
+    <!-- Title -->
+    <div class="mb-4 flex items-center justify-end">
+        <button id="filter-btn" class="bg-gray-200 text-gray-800 py-2 px-4 rounded">Filter</button>
+    </div>
+    <!-- Table -->
+    <div class="p-7 bg-white w-full rounded-md">
+        <!-- Filter Modal -->
+        <div id="filterModal" class="inset-0 bg-gray-800 text-gray-600 fixed z-10 flex hidden items-center justify-center bg-opacity-50">
+            <div class="bg-white w-96 p-4 rounded-lg shadow-lg">
+                <h2 class="mb-4 text-lg font-bold">Filter Contests</h2>
+                <form id="filterForm" method="get" action="@Url.Action("Detail", "Contests")">
+                    <div class="mb-3">
+                        <label for="keyword" class="text-gray-700 block text-sm font-medium">Search For</label>
+                        <input type="text" value="@keyword" name="keyword" id="keyword" class="px-3 py-2 w-full rounded border">
+                    </div>
+                    <div class="space-x-2 flex justify-end">
+                        <button type="button" class="bg-gray-200 text-gray-800 py-2 px-4 rounded" onclick="closeFilterModal()">Cancel</button>
+                        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Apply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <table class="border-gray-300 text-black w-full border-collapse border text-left">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border-gray-300 px-4 py-2 border">#</th>
+                    <th class="border-gray-300 px-4 py-2 border">Code</th>
+                    <th class="border-gray-300 px-4 py-2 border">Title</th>
+                    <th class="border-gray-300 px-4 py-2 border">Tags</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items != null && Model.Items.Any())
+                {
+                    int index = 1;
+                    foreach (var problem in Model.Items)
+                    {
+                        <tr class="hover:bg-gray-50">
+                            <td class="border-gray-300 px-4 py-2 border">@(index++)</td>
+                            <td class="border-gray-300 px-4 py-2 border">
+                                <a href="@Url.Action("Detail", "Problems", new { contestId = problem.contest_id, problemId = problem.id })" class="text-blue-500 hover:underline">
+                                    @problem.code
+                                </a>
+                            </td>
+                            <td class="border-gray-300 px-4 py-2 border">@problem.title</td>
+                            <td class="border-gray-300 px-4 py-2 border">@problem.tags</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="border-gray-300 px-4 py-2 text-gray-500 border text-center">
+                            No problems available.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <!-- Pagination -->
+        <div class="w-full">
+            @Html.PagedListPager(
+                     new StaticPagedList<ProblemTableView>(Model.Items!, Model.page_index, Model.page_size, Model.total_items),
+                     page => Url.Action("Detail", new { page_index = page, page_size = Model.page_size, keyword }),
+                     new PagedListRenderOptions
+            {
+                DisplayLinkToIndividualPages = true,
+                MaximumPageNumbersToDisplay = 5,
+                ContainerDivClasses = new[] { "flex justify-end mt-4 text-black" },
+                UlElementClasses = new[] { "pagination" },
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" }
+            }
+                     )
+        </div>
+    </div>
+</div>

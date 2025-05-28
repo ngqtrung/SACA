@@ -1,0 +1,153 @@
+﻿@using SACA_Common.Enums
+@{
+    Layout = "~/Views/Shared/Modals/_BaseModal.cshtml";
+    ViewData["ModalId"] = "testcaseAddOrUpdateModal";
+    ViewData["Title"] = (ViewData["Action"] as string == "CreateTestcase" ? "Add" : "Update") + " Testcase Modal";
+    ViewData["SubmitButtonId"] = "submitTestcaseBtn";
+    ViewData["ShowSubmitButton"] = true;
+    ViewData["Size"] = "lg";
+    ViewData["IsForm"] = true;
+}
+@model SACA_Common.DTOs.TestCase.Response.TestCaseFormView
+<div id="testcaseForm">
+    <div class="grid grid-cols-6 gap-4 text-black bg-white p-6 rounded">
+        <!-- Testcase ID -->
+        <input type="hidden" asp-for="id" value="@(ViewData["Action"] as string != "CreateTestcase" ? Model.id : null)" />
+        <!-- Problem ID -->
+        <input type="hidden" asp-for="problem_id" value="@(ViewData["Action"] as string != "CreateTestcase" ? Model.problem_id : null)" />
+        <!-- Testcase Code -->
+        <div class="flex flex-col col-span-2">
+            <label asp-for="code" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="code" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter testcase's ID" />
+            <span asp-validation-for="code" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Score -->
+        <div class="flex flex-col col-span-2">
+            <label asp-for="score" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="score" type="number" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter testcase's score" />
+            <span asp-validation-for="score" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Input -->
+        <div class="flex flex-col col-span-6">
+            <label asp-for="input" class="text-gray-700 font-medium required-field"></label>
+            @* <input asp-for="input" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter testcase's input" /> *@
+            <textarea asp-for="input" rows="5" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter testcase's input"></textarea>
+            <span asp-validation-for="input" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Output -->
+        <div class="flex flex-col col-span-6">
+            <label asp-for="output" class="text-gray-700 font-medium required-field"></label>
+            @* <input asp-for="output" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter testcase's output" /> *@
+            <textarea asp-for="output" rows="5" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter testcase's output"></textarea>
+            <span asp-validation-for="output" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Testcase Type -->
+        <div class="flex flex-col col-span-2">
+            <label asp-for="testcase_type" class="text-gray-700 font-medium required-field"></label>
+            <select asp-for="testcase_type" asp-items="Html.GetEnumSelectList<eType_TestCase>()" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none"></select>
+            @* <input asp-for="testcase_type" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter testcase's type" /> *@
+            <span asp-validation-for="testcase_type" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Execution Time -->
+        <div class="flex flex-col col-span-2">
+            <label asp-for="execution_time" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="execution_time" type="number" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter testcase's max. excecution time" />
+            <span asp-validation-for="execution_time" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Memory Limit -->
+        <div class="flex flex-col col-span-2">
+            <label asp-for="memory_limit" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="memory_limit" type="number" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter testcase's max. memory limit" />
+            <span asp-validation-for="memory_limit" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Description -->
+        <div class="flex flex-col col-span-6">
+            <label asp-for="description" class="text-gray-700 font-medium"></label>
+            <textarea id="tinymce-modal-2" asp-for="description" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </textarea>
+            <span asp-validation-for="description" class="text-red-500 text-sm"></span>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let originalTcCode;
+    $(document).ready(function () {
+        originalTcCode = document.querySelector("#testcaseForm #code").value;
+
+        document.querySelector("#submitTestcaseBtn").addEventListener("click", function (event) {
+            submitTestcaseForm(event);
+        })
+    })
+
+    function submitTestcaseForm(event) {
+        tinymce.get("tinymce-modal-2").save();
+        event.preventDefault();
+
+        const form = event.target.closest("form");
+        const formData = new FormData(form);
+        formData.append("testcase_codes", JSON.stringify(testcasesArray.map(tc => tc.code)));
+        formData.append("action", "@ViewData["Action"]");
+        formData.append("original_tc_code", originalTcCode);
+
+        const testcase = {
+            id: formData.get("id") || null,
+            problem_id: formData.get("problem_id") || null,
+            code: formData.get("code"),
+            input: formData.get("input"),
+            output: formData.get("output"),
+            score: Number(formData.get("score")),
+            execution_time: Number(formData.get("execution_time")),
+            memory_limit: Number(formData.get("memory_limit")),
+            description: formData.get("description"),
+            order: 0,
+            testcase_type: formData.get("testcase_type")
+        }
+
+        fetch("@Url.Action("ValidateTestcase", "ContestManagement")", {
+            method: "POST",
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    if ("@ViewData["Action"]" == "EditTestcase") {
+                        let index = testcasesArray.findIndex(tc => tc.code === testcase.code);
+                        if (index !== -1) testcasesArray[index] = testcase;
+                        else {
+                            testcasesArray = testcasesArray.filter(tc => tc.code !== originalTcCode);
+                            const newIndex = testcasesArray.findIndex(tc => tc.code > testcase.code);
+                            if (newIndex === -1) {
+                                testcasesArray.push(testcase);
+                            } else {
+                                testcasesArray.splice(newIndex, 0, testcase);
+                            }
+                        }
+                    } else {
+                        const index = testcasesArray.findIndex(tc => tc.code > testcase.code);
+                        if (index === -1) {
+                            testcasesArray.push(testcase);
+                        } else {
+                            testcasesArray.splice(index, 0, testcase);
+                        }
+                    }
+
+                    // Update table
+                    fetchTestcasesTabWithPage(1, 1000);
+
+                    closeModal("testcaseAddOrUpdateModal");
+                } else {
+                    displayValidationErrors("testcaseAddOrUpdateModal", data.formErrors);
+                }
+            })
+            .catch(error => console.error("Error submitting form:", error));
+    }
+</script>

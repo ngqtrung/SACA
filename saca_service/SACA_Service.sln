@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SACA_Service", "SACA_Service.csproj", "{CFD090B7-B291-97FC-04B6-91518C3F88DE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CFD090B7-B291-97FC-04B6-91518C3F88DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFD090B7-B291-97FC-04B6-91518C3F88DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFD090B7-B291-97FC-04B6-91518C3F88DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFD090B7-B291-97FC-04B6-91518C3F88DE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {79D32233-1139-4A09-8720-067C4ECE541F}
+	EndGlobalSection
+EndGlobal

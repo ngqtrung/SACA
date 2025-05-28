@@ -1,0 +1,154 @@
+﻿@using SACA_Common.DTOs.Account.Request
+@using SACA_Common.DTOs.Account.Response
+@using SACA_Common.DTOs
+@using SACA_Common.Enums
+@{
+    ViewData["Title"] = "Profile";
+    Layout = "_Layout";
+}
+@model ProfileViewModel
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Profile</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body class="bg-gray-100 font-sans text-gray-900">
+    <div class="max-w-5xl mx-auto mt-10">
+        <div class="bg-white shadow-xl rounded-2xl overflow-hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3">
+                <div class="bg-gray-800 text-white p-6">
+                    <div class="flex flex-col items-center">
+                        <img class="w-24 h-24 rounded-full object-cover mb-4 border-4 border-white" src="@(Model.Account.Result.role_name == "Lecturer" ? "/img/avatar_lecture.png" : "/img/avatar_user.png")" alt="Avatar">
+                        <h2 class="text-xl font-semibold">@Model.Account.Result.fullname</h2>
+                        <span class="mt-2 px-3 py-1 rounded-full text-sm font-medium @(Model.Account.Result.status == 1 ? "bg-green-500" : "bg-gray-500")">
+                            @(Model.Account.Result.status == 1 ? "Active" : "Inactive")
+                        </span>
+                    </div>
+                    <div class="mt-8">
+                        <nav class="flex flex-col space-y-2">
+                            <a href="#account-general" class="tab-link text-white hover:bg-gray-700 py-2 px-4 rounded bg-gray-700" data-tab="general">General</a>
+                            <a href="#account-change-password" class="tab-link text-white hover:bg-gray-700 py-2 px-4 rounded" data-tab="password">Change Password</a>
+                        </nav>
+                    </div>
+                </div>
+                <div class="col-span-2 p-6 text-black">
+                    <div id="tab-general" class="tab-content block">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-black">Username</label>
+                                <input type="text" class="mt-1 block w-full rounded-lg bg-white border border-gray-300 px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" value="@Model.Account.Result.username" disabled />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-black">Email</label>
+                                <input type="text" class="mt-1 block w-full rounded-lg bg-white border border-gray-300 px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" value="@Model.Account.Result.email" disabled />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-black">Last Login</label>
+                                <input type="text" class="mt-1 block w-full rounded-lg bg-white border border-gray-300 px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" value="@Model.Account.Result.last_login" disabled />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-password" class="tab-content hidden">
+                        <form id="changePasswordForm" class="space-y-6 mt-2">
+                            <div class="relative">
+                                <label class="block text-sm font-semibold text-black">Current Password</label>
+                                <input type="password" id="old_password" name="old_password" class="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                                <span class="absolute top-9 right-3 cursor-pointer text-gray-500" onclick="togglePasswordVisibility('old_password', this)"><i class="fas fa-eye"></i></span>
+                            </div>
+                            <div class="relative">
+                                <label class="block text-sm font-semibold text-black">New Password</label>
+                                <input type="password" id="new_password" name="new_password" class="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required minlength="6" />
+                                <span class="absolute top-9 right-3 cursor-pointer text-gray-500" onclick="togglePasswordVisibility('new_password', this)"><i class="fas fa-eye"></i></span>
+                            </div>
+                            <div class="relative">
+                                <label class="block text-sm font-semibold text-black">Repeat New Password</label>
+                                <input type="password" id="re_password" name="re_password" class="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required minlength="6" />
+                                <span class="absolute top-9 right-3 cursor-pointer text-gray-500" onclick="togglePasswordVisibility('re_password', this)"><i class="fas fa-eye"></i></span>
+                            </div>
+                            <div class="text-right">
+                                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                                    <i class="fas fa-save mr-2"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('bg-gray-700'));
+            document.querySelector(`.tab-link[data-tab="${tab}"]`).classList.add('bg-gray-700');
+        }
+
+        document.querySelectorAll('.tab-link').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                switchTab(this.getAttribute('data-tab'));
+            });
+        });
+
+        function togglePasswordVisibility(inputId, iconSpan) {
+            const input = document.getElementById(inputId);
+            const icon = iconSpan.querySelector('i');
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !isPassword);
+            icon.classList.toggle('fa-eye-slash', isPassword);
+        }
+
+        $(document).ready(function () {
+            $('#changePasswordForm').on('submit', function (e) {
+                e.preventDefault();
+
+                const oldPassword = $('#old_password').val().trim();
+                const newPassword = $('#new_password').val().trim();
+                const rePassword = $('#re_password').val().trim();
+
+                if (newPassword !== rePassword) {
+                    Swal.fire({ icon: 'error', title: 'Mismatch', text: 'Passwords do not match.' });
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('old_password', oldPassword);
+                formData.append('new_password', newPassword);
+                formData.append('re_password', rePassword);
+
+                fetch('/Authen/ChangePassword', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.result === true) {
+                            Swal.fire({ icon: 'success', title: 'Success', text: data.message || 'Password changed successfully.' })
+                                .then(() => window.location.href = window.location.href);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Failed',
+                                text: (data.message === 'Sai mật khẩu' ? 'Wrong old password' : (data.message || 'Could not change password.'))
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({ icon: 'error', title: 'Unexpected Error', text: 'An error occurred while changing password.' });
+                    });
+            });
+        });
+    </script>
+</body>
+</html>

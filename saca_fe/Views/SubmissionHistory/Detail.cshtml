@@ -1,0 +1,140 @@
+﻿@using SACA_Common.DTOs.Submission.Response
+@using SACA_Common.Enums
+@model SubmissionView
+
+@{
+    ViewData["Title"] = "Submission Detail";
+    Layout = "_Layout";
+    ViewBag.ShowNavTab = true;
+    ViewBag.ActiveTab = "submission-history";
+}
+@section BootstrapStyles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/monokai.min.css" rel="stylesheet" />
+}
+
+<div class="mx-auto bg-white text-black p-4 rounded-lg shadow-lg">
+    <div class="border-b pb-2 text-sm text-gray-600">
+        <p>
+            By <span class="text-green-600 font-semibold">@Model.username</span>,
+            Contest: <span class="font-semibold">@Model.contest_code</span>,
+            Problem: <span class="font-semibold">@Model.problem_title</span>,
+            Submitted at: <span class="text-gray-700">@Model.submitted_at.ToString("yyyy-MM-dd HH:mm:ss")</span>
+        </p>
+    </div>
+
+    <div>
+        <label class="block font-bold mb-2 text-gray-700">Source Code:</label>
+        <textarea id="source-code" class="hidden">@Model.source_code</textarea>
+        <div id="code-container" class="border rounded"></div>
+    </div>
+
+    <div>
+        <h3 class="text-lg font-bold mb-4">Testcase Results</h3>
+        <p class="mb-2 text-sm text-gray-700">
+            Passed Testcases: <span class="font-semibold text-green-600">@Model.passed_testcase</span> / <span class="font-semibold">@Model.total_testcase</span>
+        </p>
+        <table class="table-auto w-full border border-gray-300 text-sm">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border px-3 py-2 text-left">Testcase</th>
+                    <th class="border px-3 py-2 text-left">Input</th>
+                    <th class="border px-3 py-2 text-left">Expected Output</th>
+                    <th class="border px-3 py-2 text-left">Actual Output</th>
+                    <th class="border px-3 py-2 text-left">Time</th>
+                    <th class="border px-3 py-2 text-left">Memory</th>
+                    <th class="border px-3 py-2 text-left">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var g in Model.gradings)
+                {
+                    <tr class="hover:bg-gray-50">
+                        <td class="border px-3 py-2">@g.testcase_code</td>
+                        <td class="border px-3 py-2">
+                            <code>
+                                @Html.Raw(!string.IsNullOrEmpty(g.input)
+                                         ? (g.input.Length > 200 ? g.input.Substring(0, 200) + "..." : g.input.Replace("\n", "<br/>"))
+                                         : "<span class='text-gray-500 italic'>No input</span>")
+                            </code>
+                        </td>
+
+                        <td class="border px-3 py-2">
+                            <code>
+                                @Html.Raw(!string.IsNullOrEmpty(g.expected_output)
+                                         ? (g.expected_output.Length > 200 ? g.expected_output.Substring(0, 200) + "..." : g.expected_output.Replace("\n", "<br/>"))
+                                         : "<span class='text-gray-500 italic'>No expected output</span>")
+                            </code>
+                        </td>
+
+                        <td class="border px-3 py-2">
+                            <code>
+                                @Html.Raw(!string.IsNullOrEmpty(g.actual_output)
+                                         ? (g.actual_output.Length > 200 ? g.actual_output.Substring(0, 200) + "..." : g.actual_output.Replace("\n", "<br/>"))
+                                         : "<span class='text-gray-500 italic'>No actual output</span>")
+                            </code>
+                        </td>
+
+                        <td class="border px-3 py-2">@g.running_time ms</td>
+                        <td class="border px-3 py-2">@g.running_memory KB</td>
+                        <td class="border px-3 py-2">
+                            @switch (g.status)
+                            {
+                                case eStatus_Judge0_Submission.Accepted:
+                                    <span class="text-green-600 font-semibold">Accepted</span>
+                                    break;
+                                case eStatus_Judge0_Submission.WrongAnswer:
+                                    <span class="text-red-600 font-semibold">Wrong Answer</span>
+                                    break;
+                                case eStatus_Judge0_Submission.CompilationError:
+                                    <span class="text-yellow-500 font-semibold">Compile Error</span>
+                                    break;
+                                case eStatus_Judge0_Submission.RuntimeError_SIGABRT:
+                                case eStatus_Judge0_Submission.RuntimeError_SIGFPE:
+                                case eStatus_Judge0_Submission.RuntimeError_NZEC:
+                                case eStatus_Judge0_Submission.RuntimeError_SIGSEGV:
+                                case eStatus_Judge0_Submission.RuntimeError_SIGXFSZ:
+                                case eStatus_Judge0_Submission.RuntimeError_Other:
+                                    <span class="text-purple-500 font-semibold">Runtime Error</span>
+                                    break;
+                                case eStatus_Judge0_Submission.TimeLimitExceeded:
+                                    <span class="text-blue-500 font-semibold">TLE</span>
+                                    break;
+                                case eStatus_Judge0_Submission.ExecFormatError:
+                                case eStatus_Judge0_Submission.InternalError:
+                                    <span class="text-indigo-500 font-semibold">Internal Error</span>
+                                    break;
+                                case eStatus_Judge0_Submission.InQueue:
+                                    <span class="text-blue-400 font-semibold">In Queue</span>
+                                    break;
+                                case eStatus_Judge0_Submission.Processing:
+                                    <span class="text-yellow-300 font-semibold">In Progress</span>
+                                    break;
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/clike/clike.min.js"></script>
+
+<script type="module">
+    const code = document.getElementById("source-code").value;
+
+    const editor = CodeMirror(document.getElementById("code-container"), {
+        value: code,
+        mode: "text/x-c++src",
+        theme: "monokai",
+        lineNumbers: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        readOnly: true
+    });
+
+    editor.setSize("100%", "400px");
+</script>
+

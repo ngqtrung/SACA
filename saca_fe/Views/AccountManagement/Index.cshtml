@@ -1,0 +1,166 @@
+﻿@using SACA_Common.DTOs
+@using SACA_Common.DTOs.Account.Response
+@using SACA_Common.Enums
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+
+@{
+    ViewData["Title"] = "Account Management";
+    Layout = "_Layout";
+    string? keyword = Context.Request.Query["keyword"];
+    string? status = Context.Request.Query["status"];
+}
+@model PagedResponse<AccountView>
+@section BootstrapStyles {
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+}
+
+<div class="p-4 container mx-auto">
+    <!-- Filter Modal -->
+    <div id="filterModal" class="inset-0 bg-gray-800 text-gray-600 fixed z-10 flex hidden items-center justify-center bg-opacity-50">
+        <div class="bg-white w-96 p-4 rounded-lg shadow-lg">
+            <h2 class="mb-4 text-lg font-bold">Filter Accounts</h2>
+            <form id="filterForm" method="get" action="@Url.Action("Index", "AccountManagement")">
+                <div class="mb-3">
+                    <label for="keyword" class="text-gray-700 block text-sm font-medium">Search For</label>
+                    <input type="text" value="@keyword" name="keyword" id="keyword" class="px-3 py-2 w-full rounded border">
+                </div>
+                <div class="mb-3">
+                    <label for="status" class="text-gray-700 block text-sm font-medium">Status</label>
+                    <select name="status" id="status" class="px-3 py-2 w-full rounded border">
+                        <option value="">-- Select Status --</option>
+                        @foreach (eStatus_Account st in Enum.GetValues(typeof(eStatus_Account)))
+                        {
+                            <option selected="@(status==((int)st).ToString())" value="@((int)st)">@st</option>
+                        }
+                    </select>
+                </div>
+                <div class="space-x-2 flex justify-end">
+                    <button type="button" class="bg-gray-200 text-gray-800 py-2 px-4 rounded" onclick="closeFilterModal()">Cancel</button>
+                    <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Apply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Title -->
+    <div class="mb-4 flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Account List</h1>
+        <div class="space-x-2 flex">
+            <button id="filter-btn" class="bg-gray-200 text-gray-800 py-2 px-4 items-center gap-2 rounded flex">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+                Filter
+            </button>
+            <button id="export-btn" class="bg-gray-200 text-gray-800 py-2 px-4 items-center gap-2 rounded flex">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Export
+            </button>
+            <button class="bg-gray-200 text-gray-800 py-2 px-4 items-center gap-2 rounded flex">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                </svg>
+                Import
+            </button>
+            <a role="button" class="bg-lime-400 text-gray-800 py-2 px-4 items-center gap-2 rounded flex" asp-action="Create">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>Add
+            </a>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="p-7 bg-white w-full rounded-md">
+        <table class="border-gray-300 text-black w-full border-collapse border text-left">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border-gray-300 px-4 py-2 border">#</th>
+                    <th class="border-gray-300 px-4 py-2 border">Full Name</th>
+                    <th class="border-gray-300 px-4 py-2 border">Email</th>
+                    <th class="border-gray-300 px-4 py-2 border">Username</th>
+                    <th class="border-gray-300 px-4 py-2 border">Status</th>
+                    <th class="border-gray-300 px-4 py-2 border">Last Login</th>
+                    <th class="border-gray-300 px-4 py-2 border">Role</th>
+                    <th class="border-gray-300 px-4 py-2 border">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items!.Any())
+                {
+                    int index = (Model.page_index - 1) * Model.page_size + 1;
+                    foreach (var account in Model.Items!)
+                    {
+                        <tr class="hover:bg-gray-50">
+                            <td class="border-gray-300 px-4 py-2 border">@(index++)</td>
+                            <td class="border-gray-300 px-4 py-2 border">@account.fullname</td>
+                            <td class="border-gray-300 px-4 py-2 border">@account.email</td>
+                            <td class="border-gray-300 px-4 py-2 border">@account.username</td>
+                            <td class="border-gray-300 px-4 py-2 border">
+                                @if (account.status == (int)eStatus_Account.Active)
+                                {
+                                    <span class="text-green-500 font-semibold">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="text-red-500 font-semibold">Inactive</span>
+                                }
+                            </td>
+                            <td class="border-gray-300 px-4 py-2 border">
+                                @(account.last_login?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A")
+                            </td>
+                            <td class="border-gray-300 px-4 py-2 border">@account.role_name</td>
+                            <td class="border-gray-300 px-4 py-2 border">
+                                <div class="space-x-2 flex">
+                                    <a href="@Url.Action("Detail", "AccountManagement", new { id = account.id })" class="text-green-500 hover:underline">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                        </svg>
+                                    </a>
+                                    <a href="@Url.Action("Edit", "AccountManagement", new { id = account.id })" class="text-yellow-500 hover:underline">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                        </svg>
+                                    </a>
+                                    <a href="@Url.Action("Delete", "AccountManagement", new { id = account.id })" class="text-red-500 hover:underline" onclick="return confirm('Are you sure?')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="border-gray-300 px-4 py-2 text-gray-500 border text-center">
+                            No accounts available.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="w-full">
+            @Html.PagedListPager(
+                     new StaticPagedList<AccountView>(Model.Items!, Model.page_index, Model.page_size, Model.total_items),
+                     page => Url.Action("Index", new { page_index = page, page_size = Model.page_size, keyword, status }),
+                     new PagedListRenderOptions
+            {
+                DisplayLinkToIndividualPages = true,
+                MaximumPageNumbersToDisplay = 5,
+                ContainerDivClasses = new[] { "flex justify-end mt-4 text-black" },
+                UlElementClasses = new[] { "pagination" },
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" }
+            }
+                     )
+        </div>
+    </div>
+</div>

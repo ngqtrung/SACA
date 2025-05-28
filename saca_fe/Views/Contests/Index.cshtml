@@ -1,0 +1,154 @@
+﻿@using SACA_Common.DTOs
+@using SACA_Common.DTOs.Contest.Response
+@using SACA_Common.Enums
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+﻿@{
+    ViewData["Title"] = "Contest List";
+    Layout = "_Layout";
+}
+@model PagedResponse<ContestTableView>
+
+@section BootstrapStyles {
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+}
+<div class="p-4 container mx-auto">
+    <!-- Breadcrumb -->
+    <div class="text-gray-500 mb-4 text-sm">
+        Contest / Details
+    </div>
+
+    <!-- Cards -->
+    <div class="gap-6 grid grid-cols-1">
+        @if (Model.Items!.Any())
+        {
+            foreach (var contest in Model.Items!)
+            {
+                var contestId = $"countdown_{contest.id}";
+                var isScheduled = (eStatus_Contest)contest.status == eStatus_Contest.Scheduled;
+                <div class="bg-white p-6 rounded-2xl shadow-md transition-transform duration-200 hover:scale-[1.02] relative">
+                    <h2 class="text-blue-800 text-xl font-bold">@contest.code</h2>
+                    <h2 class="text-gray-800 text-lg font-semibold">@contest.title</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-gray-600 mb-2 text-sm">@contest.description</p>
+                        </div>
+                        <div class="text-sm text-gray-600 ml-34">
+                            <p>Class: <span class="font-medium text-black">@contest.class_code</span></p>
+                            <p>Subject: <span class="font-medium text-black">@contest.subject_code</span></p>
+                            <p>Start Time: <span class="font-medium text-black">@contest.start_at.ToString("yyyy-MM-dd HH:mm:ss")</span></p>
+                            <p>End Time: <span class="font-medium text-black">@contest.end_at.ToString("yyyy-MM-dd HH:mm:ss")</span></p>
+                            <p>
+                                Status:
+                                @switch ((eStatus_Contest)contest.status)
+                                {
+                                    case eStatus_Contest.Canceled:
+                                        <span class="text-red-600 font-bold">Canceled</span>
+                                        break;
+                                    case eStatus_Contest.OnGoing:
+                                        <span class="text-green-600 font-bold">Ongoing</span>
+                                        break;
+                                    case eStatus_Contest.Scheduled:
+                                        <span id="status_@contest.id" class="text-blue-500 font-bold" data-status-id="@contest.id">Scheduled</span>
+                                        break;
+                                    case eStatus_Contest.ClosedForSubmission:
+                                        <span class="text-yellow-600 font-bold">Closed for Submission</span>
+                                        break;
+                                    case eStatus_Contest.Grading:
+                                        <span class="text-purple-500 font-bold">Grading</span>
+                                        break;
+                                    case eStatus_Contest.Completed:
+                                        <span class="text-green-700 font-bold">Completed</span>
+                                        break;
+                                    case eStatus_Contest.Draft:
+                                        <span class="text-gray-400 font-bold">Draft</span>
+                                        break;
+                                }
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Countdown + Button --><!-- Countdown + Button -->
+                    <div class="mt-4 flex justify-end items-center gap-4">
+                        @if (isScheduled)
+                        {
+                            <span class="text-sm text-blue-700 font-medium" id="countdown_@contest.id" style="min-width: 160px;">
+                                Starting soon...
+                            </span>
+                            <a href="@Url.Action("Detail", "Contests", new { id = contest.id })"
+                               id="enterBtn_@contest.id"
+                               class="hidden inline-flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-full text-sm font-semibold shadow transition duration-300">
+                                Enter Contest
+                            </a>
+
+                            <script>
+                                document.addEventListener("DOMContentLoaded", function () {
+                                    const startTime = new Date("@contest.start_at.ToString("yyyy-MM-ddTHH:mm:ss")");
+                                    const countdownElem = document.getElementById("countdown_@contest.id");
+                                    const enterBtn = document.getElementById("enterBtn_@contest.id");
+                                    const statusTextElem = document.getElementById("status_@contest.id");
+
+                                    function updateCountdown() {
+                                        const now = new Date();
+                                        const diff = startTime - now;
+
+                                        if (diff <= 0) {
+                                            countdownElem.classList.add("hidden");
+                                            enterBtn.classList.remove("hidden");
+
+                                            if (statusTextElem) {
+                                                statusTextElem.classList.remove("text-blue-500");
+                                                statusTextElem.classList.add("text-green-600");
+                                                statusTextElem.textContent = "Ongoing";
+                                            }
+                                            clearInterval(timer);
+                                            return;
+                                        }
+
+                                        const hours = Math.floor(diff / (1000 * 60 * 60));
+                                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                                        countdownElem.textContent = `Starts in ${hours}h ${minutes}m ${seconds}s`;
+                                    }
+
+                                    const timer = setInterval(updateCountdown, 1000);
+                                    updateCountdown();
+                                });
+                            </script>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Detail", "Contests", new { id = contest.id })"
+                               class="inline-flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-full text-sm font-semibold shadow transition duration-300">
+                                Enter Contest
+                            </a>
+                        }
+                    </div>
+
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-gray-500 col-span-full text-center">
+                No contests available.
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    <div class="w-full">
+        @Html.PagedListPager(
+                 new StaticPagedList<ContestTableView>(Model.Items, Model.page_index, Model.page_size, Model.total_items),
+                 page => Url.Action("Index", new { page_index = page, page_size = Model.page_size }),
+                 new PagedListRenderOptions
+        {
+            DisplayLinkToIndividualPages = true,
+            MaximumPageNumbersToDisplay = 5,
+            ContainerDivClasses = new[] { "flex justify-end mt-4 text-black" },
+            UlElementClasses = new[] { "pagination" },
+            LiElementClasses = new string[] { "page-item" },
+            PageClasses = new string[] { "page-link" }
+        })
+    </div>
+</div>

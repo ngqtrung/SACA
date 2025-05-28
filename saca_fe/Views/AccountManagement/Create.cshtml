@@ -1,0 +1,55 @@
+﻿@using SACA_Common.DTOs.Account.Response
+@using SACA_Common.Enums
+
+@{
+    ViewData["Title"] = "Create Account";
+    Layout = "_Layout";
+}
+
+<div class="p-4 container mx-auto">
+    <!-- Title -->
+    <div class="mb-4 flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Edit Account</h1>
+        <a href="@Url.Action("Index", "AccountManagement")" class="bg-gray-200 text-gray-800 py-2 px-4 rounded">Back to List</a>
+    </div>
+
+    <!-- Account Edit Form -->
+    <form method="post" action="@Url.Action("Create", "AccountManagement")">
+        <div class="p-7 bg-white text-gray-800 rounded-md shadow">
+            <div class="gap-4 grid grid-cols-1 md:grid-cols-2">
+                <div>
+                    <label class="text-gray-600 required-field font-semibold">Full Name:</label>
+                    <input type="text" name="fullname" required
+                           class="border-gray-300 p-2 w-full rounded-md border" />
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Roll Number:</label>
+                    <input type="text" name="roll_number"
+                           class="border-gray-300 p-2 w-full rounded-md border" />
+                </div>
+                <div>
+                    <label class="text-gray-600 required-field font-semibold">Email:</label>
+                    <input type="email" name="email" required
+                           class="border-gray-300 p-2 w-full rounded-md border" />
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Username:</label>
+                    <input type="text" name="username" disabled placeholder="This will be generated automatically by the system"
+                           class="border-gray-300 p-2 w-full rounded-md border" />
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Password:</label>
+                    <input type="text" name="password" disabled placeholder="This will be generated automatically by the system"
+                           class="border-gray-300 p-2 w-full rounded-md border" />
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">
+                    Create
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

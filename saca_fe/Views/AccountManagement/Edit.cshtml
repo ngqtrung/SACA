@@ -1,0 +1,107 @@
+﻿@using SACA_Common.DTOs.Account.Response
+@using SACA_Common.Enums
+@model AccountView
+
+@{
+    ViewData["Title"] = "Edit Account";
+    Layout = "_Layout";
+}
+
+<div class="p-4 container mx-auto">
+    <!-- Title -->
+    <div class="mb-4 flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Edit Account</h1>
+        <a href="@Url.Action("Index", "AccountManagement")" class="bg-gray-200 text-gray-800 py-2 px-4 rounded">Back to List</a>
+    </div>
+
+    <!-- Account Edit Form -->
+    <form method="post" action="@Url.Action("Edit", "AccountManagement")">
+        <input type="text" name="id" value="@Model.id"
+               class="border-gray-300 p-2 w-full rounded-md border" disabled hidden />
+        <div class="p-7 bg-white text-gray-800 rounded-md shadow">
+            <div class="gap-4 grid grid-cols-1 md:grid-cols-2">
+                <div>
+                    <label class="text-gray-600 required-field font-semibold">Full Name:</label>
+                    <input type="text" name="fullname" value="@Model.fullname" required
+                           class="border-gray-300 p-2 w-full rounded-md border" />
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Roll Number:</label>
+                    <input type="text" name="roll_number" value="@Model.roll_number"
+                           class="border-gray-300 p-2 w-full rounded-md border" />
+                </div>
+                <div>
+                    <label class="text-gray-600 required-field font-semibold">Email:</label>
+                    <input type="email" name="email" value="@Model.email" required
+                           class="border-gray-300 p-2 w-full rounded-md border" />
+                </div>
+                <div>
+                    <label class="text-gray-600 required-field font-semibold">Username:</label>
+                    <input type="text" name="username" value="@Model.username" required
+                           class="border-gray-300 p-2 w-full rounded-md border" />
+                </div>
+                <div>
+                    <label class="text-gray-600 required-field font-semibold">Status:</label>
+                    <select name="status" class="border-gray-300 p-2 w-full rounded-md border">
+                        @if (Model.status == (int)eStatus_Account.Active)
+                        {
+                            <option value="@((int)eStatus_Account.Active)" selected>Active</option>
+                            <option value="@((int)eStatus_Account.InActive)">Inactive</option>
+                        }
+                        else
+                        {
+                            <option value="@((int)eStatus_Account.Active)">Active</option>
+                            <option value="@((int)eStatus_Account.InActive)" selected>Inactive</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Last Login:</label>
+                    <input type="text" name="last_login" value="@(Model.last_login?.ToString("yyyy-MM-dd HH:mm:ss") ?? "")"
+                           class="border-gray-300 p-2 w-full rounded-md border" disabled />
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Role:</label>
+                    <input type="text" name="role_name" value="@Model.role_name"
+                           class="border-gray-300 p-2 w-full rounded-md border" disabled />
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </form>
+    <!-- Change Password Form -->
+    <!-- Title -->
+    <div class="my-4 flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Change Password</h1>
+    </div>
+    <form method="post" action="@Url.Action("ChangePassword", "AccountManagement")">
+        <input type="hidden" name="id" value="@Model.id" />
+        <div class="p-7 bg-white text-gray-800 rounded-md shadow">
+            <div class="gap-4 grid grid-cols-1">
+                <div>
+                    <label class="text-gray-600 required-field font-semibold">New Password</label>
+                    <input type="password" name="new_password" required
+                           class="border-gray-300 p-2 w-full rounded-md border" />
+                </div>
+                <div>
+                    <label class="text-gray-600 required-field font-semibold">Confirm Password</label>
+                    <input type="password" name="re_password" required
+                           class="border-gray-300 p-2 w-full rounded-md border" />
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600">
+                    Change Password
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

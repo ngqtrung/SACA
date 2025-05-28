@@ -1,0 +1,346 @@
+﻿@{
+    Layout = "~/Views/Shared/Modals/_BaseModal.cshtml";
+    ViewData["ModalId"] = "problemAddOrUpdateModal";
+    ViewData["Title"] = (ViewData["Action"] as string == "CreateProblem" ? "Add" : "Update") + " Problem Modal";
+    ViewData["SubmitButtonId"] = "submitProblemBtn";
+    ViewData["ShowSubmitButton"] = true;
+    ViewData["Size"] = "lg";
+    ViewData["IsForm"] = true;
+    ViewData["IsMultipartForm"] = true;
+}
+@model SACA_Common.DTOs.Problem.Response.ProblemFormView
+<div id="problemForm">
+    <div class="gap-4 text-black bg-white p-6 grid grid-cols-6 rounded">
+
+        <!-- Problem INDEX (in problemsArray) -->
+        <input type="hidden" id="problem_index" name="index" disabled />
+        <!-- Problem ID -->
+        <input type="hidden" asp-for="id" value="@(ViewData["Action"] as string != "CreateProblem" ? Model.id : null)" />
+        <!-- Contest ID -->
+        <input type="hidden" asp-for="contest_id" value="@(ViewData["Action"] as string != "CreateProblem" ? Model.contest_id : null)" />
+        <!-- Problem Code -->
+        <div class="col-span-2 flex flex-col">
+            <label asp-for="code" class="text-gray-700 required-field font-medium"></label>
+            <input asp-for="code" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter problem's ID" />
+            <span asp-validation-for="code" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Name -->
+        <div class="col-span-4 flex flex-col">
+            <label asp-for="title" class="text-gray-700 required-field font-medium"></label>
+            <input asp-for="title" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter problem's name" />
+            <span asp-validation-for="title" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Description -->
+        <div class="col-span-6 flex flex-col">
+            <label asp-for="description" class="text-gray-700 font-medium"></label>
+            <textarea id="tinymce-modal" asp-for="description" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </textarea>
+            @* <textarea asp-for="description" rows="5" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea> *@
+            <span asp-validation-for="description" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Note -->
+        <div class="col-span-6 flex flex-col">
+            <label asp-for="note" class="text-gray-700 font-medium"></label>
+            <input asp-for="note" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter note" />
+            <span asp-validation-for="note" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Tags -->
+        <div class="col-span-2 flex flex-col">
+            <label asp-for="tags" class="text-gray-700 font-medium"></label>
+            <input asp-for="tags" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter tags" />
+            <span asp-validation-for="tags" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Execution Time -->
+        <div class="flex flex-col">
+            <label asp-for="default_execution_time" class="text-gray-700 font-medium"></label>
+            <input asp-for="default_execution_time" type="number" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter testcase's max. excecution time" />
+            <span asp-validation-for="default_execution_time" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Memory Limit -->
+        <div class="flex flex-col">
+            <label asp-for="default_memory_limit" class="text-gray-700 font-medium"></label>
+            <input asp-for="default_memory_limit" type="number" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter testcase's max. memory limit" />
+            <span asp-validation-for="default_memory_limit" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Score -->
+        <div class="flex flex-col">
+            <label asp-for="score" class="text-gray-700 required-field font-medium"></label>
+            <input asp-for="score" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter score" />
+            <span asp-validation-for="score" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Max atttempts -->
+        <div class="flex flex-col">
+            <label asp-for="max_attempts" class="text-gray-700 font-medium"></label>
+            <input asp-for="max_attempts" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter max attenpts (resubmits)" />
+            <span asp-validation-for="max_attempts" class="text-red-500 text-sm"></span>
+        </div>
+
+        <!-- Files -->
+        <div class="col-span-6 flex flex-col">
+            <label asp-for="file_id" class="text-gray-700 font-medium">Given material</label>
+            <input name="file" type="file" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            <input type="hidden" asp-for="file_id" id="fileIdContainer" value="@(Model.file_id ?? null)" />
+            <span asp-validation-for="file_id" class="text-red-500 text-sm"></span>
+            <div class="mt-2 hidden items-end gap-2 flex-wrap" id="fileNameHelper">
+                <span>File stored in database: </span> 
+                <span id="fileNameContainer" class="text-blue-600 font-medium"></span>
+                <button type="button" id="deleteFileButton"
+                        class="text-red-500 hover:text-red-700 hidden "
+                        title="Remove file">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24" stroke-width="1.5"
+                         stroke="currentColor" class="size-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                const fileInput = document.querySelector('input[type="file"][name="file"]');
+                const fileIdContainer = document.getElementById("fileIdContainer");
+                const fileNameContainer = document.getElementById("fileNameContainer");
+                const fileNameHelper = document.getElementById("fileNameHelper");
+                const deleteFileButton = document.getElementById("deleteFileButton");
+
+                // List of messages that should NOT show the delete button
+                const invalidFileMessages = ["Upload failed", "Upload error", ""];
+
+                const showFileInfo = (fileName) => {
+                    fileNameContainer.textContent = fileName;
+                    fileNameHelper.classList.remove('hidden');
+
+                    if (invalidFileMessages.includes(fileName)) {
+                        deleteFileButton.classList.add("hidden");
+                    } else {
+                        deleteFileButton.classList.remove("hidden");
+                    }
+                };
+
+                // Initial check on load
+                const existingFileName = fileInput.getAttribute("data-value");
+                if (fileIdContainer.value && existingFileName) {
+                    showFileInfo(existingFileName);
+                }
+
+                const clearFileInfo = () => {
+                    fileIdContainer.value = "";
+                    fileNameContainer.textContent = "";
+                    fileNameHelper.classList.add('hidden');
+                    fileInput.value = "";
+                };
+
+                fileInput.addEventListener("change", async function () {
+                    const file = fileInput.files[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append("file", file);
+
+                    try {
+                        const response = await fetch('/ContestManagement/UploadFile', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (!response.ok) throw new Error("File upload failed");
+
+                        const result = await response.json();
+                        if (result["file_id"]) {
+                            fileIdContainer.value = result["file_id"];
+                            showFileInfo(file.name);
+                        }
+                    } catch (error) {
+                        console.error("Upload error:", error);
+                    }
+                });
+
+                deleteFileButton.addEventListener("click", async function () {
+                    const fileId = fileIdContainer.value;
+                    if (!fileId) return;
+
+                    try {
+                        const response = await fetch('/ContestManagement/DeleteFile', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ file_id: fileId })
+                        });
+
+                        if (!response.ok) throw new Error("Delete failed");
+
+                        const result = await response.json();
+                        if (result.success) {
+                            clearFileInfo();
+                        } else {
+                            console.error("Delete error:", result.message || "Unknown error");
+                        }
+                    } catch (error) {
+                        console.error("Delete request error:", error);
+                    }
+                });
+            })
+        </script>
+
+        <hr class="col-span-6 border-gray-700 my-2" />
+        <div class="col-span-6 flex flex-col">
+            <div class="flex w-full justify-between">
+                <div id="" class="gap-x-2 flex">
+                    <a role="button" class="px-4 py-1 bg-white text-black gap-1 border-1 border-gray-300 flex items-center rounded text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        Export
+                    </a>
+                    <a id="importTestcaseButton" role="button" class="px-4 py-1 bg-white text-black gap-1 border-1 border-gray-300 flex items-center rounded text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                        </svg>
+                        Import
+                    </a>
+                    <a id="addTestcaseButton" role="button" onclick="javascript:void(0)" class="px-4 py-1 text-black gap-1 flex items-center rounded bg-[#D9F275] text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Add row
+                    </a>
+                </div>
+            </div>
+            <div id="testcases">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let problemIndex = -1;
+    let originalCode;
+    $(document).ready(function () {
+        problemIndex = document.getElementById("problem_index").getAttribute("value");
+        originalCode = document.querySelector("#problemForm #code").value;
+            
+        const addTestcaseButton = document.getElementById("addTestcaseButton");
+        const importTestcaseButton = document.getElementById("importTestcaseButton");
+
+        addTestcaseButton?.addEventListener("click", () => {
+            const time_limit = Number(document.getElementById("default_execution_time").value) ?? 0;
+            const memory_limit = Number(document.getElementById("default_memory_limit").value) ?? 0;
+            const score = Number(document.getElementById("score").value) ?? 0;
+            const url = `/ContestManagement/OpenTestcasesModal?default_execution_time=${time_limit}&default_memory_limit=${memory_limit}&score=${score}&problem_action=${"@ViewData["Action"]"}`
+            openModal(url, 'testcaseAddOrUpdateModal', 'sub-modalContainer');
+        });
+
+        importTestcaseButton?.addEventListener("click", () => {
+            const time_limit = Number(document.getElementById("default_execution_time").value) ?? 0;
+            const memory_limit = Number(document.getElementById("default_memory_limit").value) ?? 0;
+            const score = Number(document.getElementById("score").value) ?? 0;
+            const url = `/ContestManagement/OpenTestcaseImportModal?default_execution_time=${time_limit}&default_memory_limit=${memory_limit}&score=${score}`
+            openModal(url, 'testcaseImportModal', 'sub-modalContainer');
+        });
+
+        //fetch Testcase table
+        fetchTestcasesTabWithPage(1);
+
+        document.querySelector("#submitProblemBtn").addEventListener("click", function(event){
+            const problemScore = parseFloat(document.getElementById("score").value);
+            const testcaseScores = Array.from(document.querySelectorAll('#testcases .scoreDisplay'))
+                .map(el => parseFloat(el.textContent || 0));
+            const totalTestcaseScore = testcaseScores.reduce((a, b) => a + b, 0);
+
+            if (Math.abs(totalTestcaseScore - problemScore) > 0.01) {
+                const proceed = confirm(`⚠ Warning: Total testcase score (${totalTestcaseScore}) does not match problem score (${problemScore}). Proceed anyway?`);
+                if (proceed) {
+                    submitProblemForm(event);
+                }
+            }else{
+                submitProblemForm(event);
+            }
+        })
+    });
+
+    function submitProblemForm(event){
+        const problemsDataInput = document.getElementById("problemsData");
+        tinymce.get("tinymce-modal").save();
+        event.preventDefault();
+
+        // Get form data
+        const form = event.target.closest("form");
+        const formData = new FormData(form);
+        formData.append("problem_codes", JSON.stringify(problemsArray.map(p => p.code)));
+        formData.append("action", "@ViewData["Action"]");
+        formData.append("original_code", originalCode);
+        const problem = {
+            id: formData.get("id") || null,
+            contest_id: formData.get("contest_id") || null,
+            code: formData.get("code"),
+            title: formData.get("title"),
+            description: formData.get("description"),
+            tags: formData.get("tags"),
+            note: formData.get("note"),
+            max_attempts: Number(formData.get("max_attempts")),
+            score: Number(formData.get("score")),
+            files: formData.get("files") ? formData.get("files").name : "", //get filename
+            test_cases: testcasesArray,
+            default_execution_time: Number(formData.get("default_execution_time")),
+            default_memory_limit: Number(formData.get("default_memory_limit")),
+            file_id: formData.get("file_id") || null,
+            file: {
+                name: document.querySelector('input[type="file"][name="file"]').files[0] ? document.querySelector('input[type="file"][name="file"]').files[0].name : document.getElementById("fileNameContainer").textContent
+            }
+        };
+        // Submit the form using AJAX
+        fetch("@Url.Action("ValidateProblem", "ContestManagement")", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                // Update the JavaScript array
+                if("@ViewData["Action"]" == "EditProblem"){
+                    //Do đã check unique code cho Problem trên ValidateProblem nên mới làm được như này
+                    //Edit nếu mà không đổi code thì update theo code, nếu thay đổi code xóa problem cũ đi thêm problem mới vào
+                    let index = problemsArray.findIndex(m => m.code === problem.code);
+                    if(index !== -1) problemsArray[index] = problem;
+                    else{
+                        problemsArray = problemsArray.filter(p => p.code !== originalCode);
+                        const newIndex = problemsArray.findIndex(p => p.code > problem.code);
+                        if(newIndex === -1){
+                            problemsArray.push(problem);
+                        } else {
+                            problemsArray.splice(newIndex, 0, problem);
+                        }
+                    }
+                }else{
+                    const index = problemsArray.findIndex(p => p.code > problem.code);
+                    if (index === -1) {
+                        problemsArray.push(problem);
+                    } else {
+                        problemsArray.splice(index, 0, problem);
+                    }
+                }
+
+                // Update hidden input
+                problemsDataInput.value = JSON.stringify(problemsArray);
+                // Update table
+                fetchProblemsTabWithPage(1, 1000);
+
+                closeModal("problemAddOrUpdateModal"); // Close modal after success
+            } else {
+                displayValidationErrors("problemAddOrUpdateModal", data.formErrors);
+            }
+        })
+        .catch(error => console.error("Error submitting form:", error));
+    }
+</script>

@@ -1,0 +1,130 @@
+﻿@using SACA_Common.DTOs.GradingMachine.Response
+@model GradingMachineInfo
+
+@{
+    ViewData["Title"] = "Grading Machine Status";
+    Layout = "_Layout";
+}
+
+<div class="p-4 container mx-auto">
+    <h1 class="mb-6 text-2xl font-bold">Grading Machine Status</h1>
+
+    @if (!Model.is_active)
+    {
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <strong class="font-bold">Máy chấm không khả dụng!</strong>
+            <span class="block">Vui lòng kiểm tra lại trạng thái hệ thống.</span>
+        </div>
+    }
+    else
+    {
+        <!-- Worker Info Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <h3 class="text-sm font-semibold text-gray-600">Queue Size</h3>
+                <p class="text-xl font-bold text-blue-600">@Model.queue_size</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <h3 class="text-sm font-semibold text-gray-600">Available</h3>
+                <p class="text-xl font-bold text-green-600">@Model.worker_available</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <h3 class="text-sm font-semibold text-gray-600">Idle</h3>
+                <p class="text-xl font-bold text-gray-500">@Model.worker_idle</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <h3 class="text-sm font-semibold text-gray-600">Working</h3>
+                <p class="text-xl font-bold text-yellow-600">@Model.worker_working</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <h3 class="text-sm font-semibold text-gray-600">Paused</h3>
+                <p class="text-xl font-bold text-purple-600">@Model.worker_pause</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <h3 class="text-sm font-semibold text-gray-600">Failed</h3>
+                <p class="text-xl font-bold text-red-600">@Model.job_failed</p>
+            </div>
+        </div>
+
+        <!-- Grading Machine Info Form (Read-Only) -->
+        <form class="space-y-6 bg-white p-6 rounded-lg shadow text-gray-800" disabled>
+            <fieldset disabled>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div><label>Version</label><input type="text" value="@Model.version" class="form-input bg-gray-100" /></div>
+                    <div><label>Max Queue Size</label><input type="number" value="@Model.max_queue_size" class="form-input bg-gray-100" /></div>
+
+                    <div><label>CPU Time Limit</label><input type="number" value="@Model.cpu_time_limit" class="form-input bg-gray-100" /></div>
+                    <div><label>Max CPU Time Limit</label><input type="number" value="@Model.max_cpu_time_limit" class="form-input bg-gray-100" /></div>
+
+                    <div><label>CPU Extra Time</label><input type="number" value="@Model.cpu_extra_time" class="form-input bg-gray-100" /></div>
+                    <div><label>Max CPU Extra Time</label><input type="number" value="@Model.max_cpu_extra_time" class="form-input bg-gray-100" /></div>
+
+                    <div><label>Wall Time Limit</label><input type="number" value="@Model.wall_time_limit" class="form-input bg-gray-100" /></div>
+                    <div><label>Max Wall Time Limit</label><input type="number" value="@Model.max_wall_time_limit" class="form-input bg-gray-100" /></div>
+
+                    <div><label>Memory Limit (KB)</label><input type="number" value="@Model.memory_limit" class="form-input bg-gray-100" /></div>
+                    <div><label>Max Memory Limit (KB)</label><input type="number" value="@Model.max_memory_limit" class="form-input bg-gray-100" /></div>
+
+                    <div><label>Stack Limit (KB)</label><input type="number" value="@Model.stack_limit" class="form-input bg-gray-100" /></div>
+                    <div><label>Max Stack Limit (KB)</label><input type="number" value="@Model.max_stack_limit" class="form-input bg-gray-100" /></div>
+
+                    <div><label>Max Processes / Threads</label><input type="number" value="@Model.max_processes_and_or_threads" class="form-input bg-gray-100" /></div>
+                    <div><label>Max-Max Processes / Threads</label><input type="number" value="@Model.max_max_processes_and_or_threads" class="form-input bg-gray-100" /></div>
+
+                    <div><label>Max File Size (KB)</label><input type="number" value="@Model.max_file_size" class="form-input bg-gray-100" /></div>
+                    <div><label>Max-Max File Size (KB)</label><input type="number" value="@Model.max_max_file_size" class="form-input bg-gray-100" /></div>
+
+                    <div><label>Number of Runs</label><input type="number" value="@Model.number_of_runs" class="form-input bg-gray-100" /></div>
+                    <div><label>Max Number of Runs</label><input type="number" value="@Model.max_number_of_runs" class="form-input bg-gray-100" /></div>
+
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <div class="flex items-center gap-x-2">
+                        <input type="checkbox" disabled @(Model.enable_wait_result ? "checked" : "") />
+                        <label class="text-sm font-medium text-gray-700">Enable Wait Result</label>
+                    </div>
+                    <div class="flex items-center gap-x-2">
+                        <input type="checkbox" disabled @(Model.enable_compiler_options ? "checked" : "") />
+                        <label class="text-sm font-medium text-gray-700">Enable Compiler Options</label>
+                    </div>
+                    <div class="flex items-center gap-x-2">
+                        <input type="checkbox" disabled @(Model.enable_command_line_arguments ? "checked" : "") />
+                        <label class="text-sm font-medium text-gray-700">Enable Command Line Args</label>
+                    </div>
+                    <div class="flex items-center gap-x-2">
+                        <input type="checkbox" disabled @(Model.enable_submission_delete ? "checked" : "") />
+                        <label class="text-sm font-medium text-gray-700">Enable Submission Delete</label>
+                    </div>
+                    <div class="flex items-center gap-x-2">
+                        <input type="checkbox" disabled @(Model.enable_per_process_and_thread_time_limit ? "checked" : "") />
+                        <label class="text-sm font-medium text-gray-700">Enable Per Process Time Limit</label>
+                    </div>
+                    <div class="flex items-center gap-x-2">
+                        <input type="checkbox" disabled @(Model.allow_enable_per_process_and_thread_time_limit ? "checked" : "") />
+                        <label class="text-sm font-medium text-gray-700">Allow Enable Per Process Time Limit</label>
+                    </div>
+                    <div class="flex items-center gap-x-2">
+                        <input type="checkbox" disabled @(Model.enable_per_process_and_thread_memory_limit ? "checked" : "") />
+                        <label class="text-sm font-medium text-gray-700">Enable Per Process Memory Limit</label>
+                    </div>
+                    <div class="flex items-center gap-x-2">
+                        <input type="checkbox" disabled @(Model.allow_enable_per_process_and_thread_memory_limit ? "checked" : "") />
+                        <label class="text-sm font-medium text-gray-700">Allow Enable Per Process Memory Limit</label>
+                    </div>
+                </div>
+
+            </fieldset>
+        </form>
+    }
+</div>
+
+<style>
+    .form-input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        margin-top: 0.25rem;
+    }
+</style>

@@ -1,0 +1,96 @@
+﻿@using SACA_Common.DTOs.SysSetting.Response
+@model List<SysSettingView>
+@{
+    ViewData["Title"] = "System Settings";
+    Layout = "_Layout";
+}
+
+<div class="p-4 container mx-auto">
+    <!-- Title -->
+    <h1 class="mb-6 text-2xl font-bold">System Settings</h1>
+
+    <!-- Form -->
+    <form method="post" asp-action="Update" asp-controller="Settings">
+        <div class="gap-6 text-gray-700 grid grid-cols-1">
+            <!-- Mail Settings -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="mb-4 text-lg font-semibold">Mail Settings</h2>
+                <div class="mb-4">
+                    <label class="text-gray-700 block text-sm font-medium">Email</label>
+                    <input type="email" name="config_mail_email" value="@Model.FirstOrDefault(x => x.key == "config_mail_email")?.value"
+                           class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div class="mb-4">
+                    <label class="text-gray-700 block text-sm font-medium">Password</label>
+                    <input type="password" name="config_mail_password" value="@Model.FirstOrDefault(x => x.key == "config_mail_password")?.value"
+                           class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div class="mb-4">
+                    <label class="text-gray-700 block text-sm font-medium">SMTP Port</label>
+                    <input type="text" name="config_mail_smtp_port" value="@Model.FirstOrDefault(x => x.key == "config_mail_smtp_port")?.value"
+                           class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div class="mb-4">
+                    <label class="text-gray-700 block text-sm font-medium">SMTP Host</label>
+                    <input type="text" name="config_mail_smtp_host" value="@Model.FirstOrDefault(x => x.key == "config_mail_smtp_host")?.value"
+                           class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div class="mb-4">
+                    <label class="text-gray-700 block text-sm font-medium">Sender Name</label>
+                    <input type="text" name="config_mail_fullname" value="@Model.FirstOrDefault(x => x.key == "config_mail_fullname")?.value"
+                           class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+            </div>
+
+            <!-- Google Drive Settings -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="mb-4 text-lg font-semibold">Google Drive Settings</h2>
+                <div class="mb-4">
+                    <label class="text-gray-700 block text-sm font-medium">Google Drive Client ID</label>
+                    <input type="text" name="config_google_drive_client_id" value="@Model.FirstOrDefault(x => x.key == "config_google_drive_client_id")?.value"
+                           class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div class="mb-4">
+                    <label class="text-gray-700 block text-sm font-medium">Google Drive Client Secret</label>
+                    <input type="password" name="config_google_drive_client_secret" value="@Model.FirstOrDefault(x => x.key == "config_google_drive_client_secret")?.value"
+                           class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+            </div>
+
+            <!-- Judge0 Settings -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="mb-4 text-lg font-semibold">Judge0 Settings</h2>
+                <div class="mb-4">
+                    <label class="text-gray-700 block text-sm font-medium">Judge0 API URL</label>
+                    <input type="text" name="config_judge0_api_url" value="@Model.FirstOrDefault(x => x.key == "config_judge0_api_url")?.value"
+                           class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+            </div>
+
+            <!-- Other Settings -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="mb-4 text-lg font-semibold">Other Settings</h2>
+                <div class="mb-4">
+                    <label class="text-gray-700 block text-sm font-medium">Delete Account After (Hours)</label>
+                    <input type="number" name="config_user_delete_after_exam_hours" value="@Model.FirstOrDefault(x => x.key == "config_user_delete_after_exam_hours")?.value"
+                           class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div class="mb-4">
+                    <label class="text-gray-700 block text-sm font-medium">Allow Reset Participant</label>
+                    <label class="flex items-center text-sm">
+                        <input type="checkbox" name="config_user_reset_student_enabled" value="true"
+                        @(Model.FirstOrDefault(x => x.key == "config_user_reset_student_enabled")?.value == "true" ? "checked" : "") />
+                        <span class="ml-2">Reset student after exam</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="mt-6 flex justify-end">
+            <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-600">
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>

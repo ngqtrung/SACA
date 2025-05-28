@@ -1,0 +1,38 @@
+﻿@using SACA_Common.DTOs.Authenticate.Request
+﻿@{
+    ViewData["Title"] = "Login";
+    Layout = "_UnAuthLayout";
+}
+@model LoginRequest
+
+<!-- Main Content -->
+<div class="flex justify-center items-center min-h-screen px-10">
+    <div class="flex w-full max-w-5xl bg-transparent">
+        <!-- Left Side Illustration -->
+        <div class="w-1/2 flex justify-center items-center">
+            <img src="/img/Group_38.png" alt="Illustration" class="w-130">
+        </div>
+
+        <!-- Right Side Login Form -->
+        <div class="w-1/2 bg-gray-200 text-gray-900 p-10 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold mb-6 text-center">SIGN IN</h2>
+            <form method="post" asp-controller="authen" asp-action="login">
+                <div class="mb-4">
+                    <label class="block font-semibold mb-1">User name</label>
+                    <input type="text" placeholder="Enter your user name" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" asp-for="username">
+                </div>
+                <div class="mb-4">
+                    <label class="block font-semibold mb-1">Password</label>
+                    <input type="password" placeholder="Enter your password" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" asp-for="password">
+                </div>
+                <div class="flex justify-between items-center mb-6">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2"> Remember me
+                    </label>
+                    <a href="#" class="text-blue-500 hover:underline">Forgot your password?</a>
+                </div>
+                <button class="w-full bg-lime-400 text-gray-900 py-3 rounded-lg font-semibold hover:bg-lime-500" type="submit">Sign in</button>
+            </form>
+        </div>
+    </div>
+</div>

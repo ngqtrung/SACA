@@ -1,0 +1,401 @@
+﻿@using SACA_Common.Enums
+@using SACA_Common.Utils
+
+@{
+    ViewData["Title"] = "ContestManagement Creation";
+    Layout = "_Layout";
+}
+@model SACA_Common.DTOs.Contest.Response.ContestFormView
+@section Breadcrumb {
+    <nav class="text-sm">
+        <ol class="list-reset text-white flex">
+            <li><a href="@Url.Action("Index", "ContestManagement")" class="text-blue-600 hover:underline">Home</a></li>
+            <li><span class="mx-1">/</span></li>
+            <li class="font-semibold">@(ViewData["Action"] as string == "Create" ? "Create" : "Edit")</li>
+        </ol>
+    </nav>
+}
+@section BootstrapStyles {
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+}
+
+<div class="flex flex-col gap-y-4">
+    <form id="contestDetailForm" method="post" asp-action="@ViewData["Action"]" class="">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-2xl font-bold">@(ViewData["Action"] as string == "Create" ? "Add new Contest" : "Edit Contest")</h1>
+
+            <!-- Submit Button -->
+            <button type="submit" class="text-black px-4 py-1 rounded bg-[#D9F275]">
+                Save
+            </button>
+        </div>
+
+        <div class="gap-4 text-black bg-white p-6 grid grid-cols-4 rounded">
+            <!-- Contest ID -->
+            <input asp-for="id" type="hidden" value="@(ViewData["Action"] as string == "Create" ? Guid.NewGuid().ToString() : Model.id)" />
+            <!-- Contest Code -->
+            <div class="col-span-2 flex flex-col col-spq">
+                <label asp-for="code" class="text-gray-700 required-field font-medium"></label>
+                <input asp-for="code" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter your contest code (e.g. SU25_SE1706_PRF192_PT2)" />
+                <span asp-validation-for="code" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Contest Name -->
+            <div class="col-span-2 flex flex-col">
+                <label asp-for="title" class="text-gray-700 required-field font-medium"></label>
+                <input asp-for="title" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter your contest name" />
+                <span asp-validation-for="title" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Programming Language -->
+            <div class="flex flex-col">
+                <label asp-for="programming_languages" class="text-gray-700 required-field font-medium">Programming Language</label>
+                <select multiple asp-for="programming_languages" asp-items="EnumExtensions.GetEnumSelectListInOrder<eType_ContestProgrammingLanguage>()" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none"></select>
+                <span asp-validation-for="programming_languages" class="text-red-500 text-sm"></span>
+            </div>
+
+            @{
+                // Round current time to the nearest 5-minute mark
+                DateTime now = DateTime.Now;
+                int roundedMinutes = ((now.Minute + 4) / 5) * 5;
+                if (roundedMinutes == 60)
+                {
+                    now = now.AddHours(1);
+                    roundedMinutes = 0;
+                }
+                DateTime roundedTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, roundedMinutes, 0, DateTimeKind.Local);
+                DateTime displayStartTime = Model.start_at != default ? Model.start_at : roundedTime;
+                DateTime displayEndTime = Model.end_at != default ? Model.end_at : roundedTime.AddHours(1);
+                double displayDuration = Model.duration != default ? Model.duration : (displayEndTime - displayStartTime).TotalMinutes;
+            }
+
+            <!-- Start Time -->
+            <div class="flex flex-col">
+                <label asp-for="start_at" class="text-gray-700 required-field font-medium"></label>
+                <input asp-for="start_at" type="datetime-local" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Select date and time" value="@displayStartTime.ToString("yyyy-MM-ddTHH:mm")" step="60" />
+                <span asp-validation-for="start_at" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- End Time -->
+            <div class="flex flex-col">
+                <label asp-for="end_at" class="text-gray-700 required-field font-medium"></label>
+                <input asp-for="end_at" type="datetime-local" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Select date and time" value="@displayEndTime.ToString("yyyy-MM-ddTHH:mm")" step="60" />
+                <span asp-validation-for="end_at" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Duration -->
+            <div class="flex flex-col">
+                <label asp-for="duration" class="text-gray-700 required-field font-medium">Duration (minutes)</label>
+                <input asp-for="duration" type="number" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" value="@displayDuration" min="1" />
+                <span asp-validation-for="duration" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Status -->
+            <div class="flex flex-col">
+                <label asp-for="status" class="text-gray-700 required-field font-medium"></label>
+                <select asp-for="status" asp-items="Html.GetEnumSelectList<eStatus_Contest>()" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none"></select>
+                <span asp-validation-for="status" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Penalty time  -->
+            <div class="flex flex-col">
+                <label asp-for="penalty_time" class="text-gray-700 required-field font-medium"></label>
+                <input asp-for="penalty_time" type="number" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                <span asp-validation-for="penalty_time" class="text-red-500 text-sm"></span>
+            </div>
+            <!-- Subject Code -->
+            <div class="flex flex-col">
+                <label asp-for="subject_code" class="text-gray-700 font-medium"></label>
+                <input asp-for="subject_code" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter your subject code" />
+                <span asp-validation-for="subject_code" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Class Code -->
+            <div class="flex flex-col">
+                <label asp-for="class_code" class="text-gray-700 font-medium"></label>
+                <input asp-for="class_code" class="border-gray-400 p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter your class code" />
+                <span asp-validation-for="class_code" class="text-red-500 text-sm"></span>
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const contestCodeInput = document.querySelector('input[name="code"]');
+                    const classCodeInput = document.querySelector('input[name="class_code"]');
+                    const subjectCodeInput = document.querySelector('input[name="subject_code"]');
+
+                    contestCodeInput.addEventListener("blur", function () {
+                        const contestCode = contestCodeInput.value.trim();
+                        const parts = contestCode.split("_");
+
+                        if (parts.length >= 2) {
+                            const classCodeCandidate = parts[1];
+                            if (/^[A-Za-z]{2}\d{4}$/.test(classCodeCandidate) && classCodeInput) {
+                                classCodeInput.value = classCodeCandidate;
+                            }
+                        }
+
+                        if (parts.length >= 3) {
+                            const subjectCodeCandidate = parts[2];
+                            if (/^[A-Za-z]{3}\d{3}$/.test(subjectCodeCandidate) && subjectCodeInput) {
+                                subjectCodeInput.value = subjectCodeCandidate;
+                            }
+                        }
+                    });
+                });
+            </script>
+
+            <!-- Description -->
+            <div class="col-span-4 flex flex-col">
+                <label asp-for="description" class="text-gray-700 font-medium"></label>
+                <textarea asp-for="description" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="4"></textarea>
+                <span asp-validation-for="description" class="text-red-500 text-sm"></span>
+            </div>
+        </div>
+        <input type="hidden" id="problemsData" name="problemsData" />
+        <input type="hidden" id="membersData" name="membersData" />
+        <input type="hidden" id="settingsData" name="settingsData" />
+    </form>
+    <div class="flex justify-between">
+        <div class="gap-x-8 flex">
+            <button class="tabButton gap-x-1 pb-2 flex items-center border-b border-[#D9F275] font-semibold text-[#D9F275]" data-tab="members">
+                <svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" stroke-width="0.5" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9.59848 9.03359C9.9766 8.83047 10.4094 8.71484 10.8704 8.71484H10.8719C10.9188 8.71484 10.9407 8.65859 10.9063 8.62734C10.4269 8.19715 9.87936 7.8497 9.28598 7.59922C9.27973 7.59609 9.27348 7.59453 9.26723 7.59141C10.2375 6.88672 10.8688 5.74141 10.8688 4.44922C10.8688 2.30859 9.13754 0.574219 7.0016 0.574219C4.86566 0.574219 3.13598 2.30859 3.13598 4.44922C3.13598 5.74141 3.76723 6.88672 4.7391 7.59141C4.73285 7.59453 4.7266 7.59609 4.72035 7.59922C4.02191 7.89453 3.39535 8.31797 2.85629 8.85859C2.32034 9.39357 1.89365 10.0278 1.60004 10.7258C1.31115 11.4093 1.15524 12.1417 1.14066 12.8836C1.14025 12.9003 1.14317 12.9169 1.14927 12.9324C1.15536 12.9479 1.1645 12.9621 1.17615 12.974C1.1878 12.9859 1.20172 12.9954 1.2171 13.0019C1.23247 13.0084 1.24898 13.0117 1.26566 13.0117H2.2016C2.26879 13.0117 2.32504 12.957 2.3266 12.8898C2.35785 11.6836 2.84066 10.5539 3.69535 9.69766C4.57816 8.81172 5.75316 8.32422 7.00316 8.32422C7.8891 8.32422 8.7391 8.56953 9.47192 9.02891C9.49074 9.04074 9.51235 9.0474 9.53457 9.04822C9.55679 9.04904 9.57883 9.044 9.59848 9.03359ZM7.00316 7.13672C6.28754 7.13672 5.6141 6.85703 5.10629 6.34922C4.85644 6.10001 4.65836 5.80384 4.52348 5.47775C4.38859 5.15166 4.31956 4.8021 4.32035 4.44922C4.32035 3.73203 4.60004 3.05703 5.10629 2.54922C5.61254 2.04141 6.28598 1.76172 7.00316 1.76172C7.72035 1.76172 8.39223 2.04141 8.90004 2.54922C9.14989 2.79842 9.34797 3.0946 9.48285 3.42069C9.61774 3.74678 9.68677 4.09633 9.68598 4.44922C9.68598 5.16641 9.40629 5.84141 8.90004 6.34922C8.39223 6.85703 7.71879 7.13672 7.00316 7.13672ZM12.75 10.8555H11.4375V9.54297C11.4375 9.47422 11.3813 9.41797 11.3125 9.41797H10.4375C10.3688 9.41797 10.3125 9.47422 10.3125 9.54297V10.8555H9.00004C8.93129 10.8555 8.87504 10.9117 8.87504 10.9805V11.8555C8.87504 11.9242 8.93129 11.9805 9.00004 11.9805H10.3125V13.293C10.3125 13.3617 10.3688 13.418 10.4375 13.418H11.3125C11.3813 13.418 11.4375 13.3617 11.4375 13.293V11.9805H12.75C12.8188 11.9805 12.875 11.9242 12.875 11.8555V10.9805C12.875 10.9117 12.8188 10.8555 12.75 10.8555Z" fill="#FFFFFF" />
+                </svg>
+                Members List
+            </button>
+            <button class="tabButton gap-x-1 pb-2 flex items-center font-semibold" data-tab="problems">
+                <svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" stroke-width="0.5" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_277_360)">
+                        <path d="M8.50047 0.751953C5.87704 0.751953 3.75047 2.87852 3.75047 5.50195C3.75047 6.60039 4.12391 7.61133 4.74891 8.41602L4.10672 9.0582L3.13329 8.08477C3.10949 8.06148 3.07752 8.04844 3.04422 8.04844C3.01093 8.04844 2.97896 8.06148 2.95516 8.08477L2.33329 8.70664C2.31 8.73044 2.29696 8.76241 2.29696 8.7957C2.29696 8.829 2.31 8.86097 2.33329 8.88477L3.30672 9.8582L2.60516 10.5598L1.63172 9.58633C1.60793 9.56304 1.57595 9.55 1.54266 9.55C1.50937 9.55 1.47739 9.56304 1.4536 9.58633L0.831723 10.2082C0.808437 10.232 0.795397 10.264 0.795397 10.2973C0.795397 10.3306 0.808437 10.3625 0.831723 10.3863L1.80516 11.3598L0.784848 12.3801C0.761585 12.4036 0.748535 12.4353 0.748535 12.4684C0.748535 12.5014 0.761585 12.5331 0.784848 12.5566L1.44579 13.2176C1.49422 13.266 1.57391 13.266 1.62235 13.2176L5.58485 9.25508C6.41898 9.90206 7.44484 10.2528 8.50047 10.252C11.1239 10.252 13.2505 8.12539 13.2505 5.50195C13.2505 2.87852 11.1239 0.751953 8.50047 0.751953ZM11.0192 8.0207C10.3473 8.69414 9.45204 9.06445 8.50047 9.06445C7.54891 9.06445 6.6536 8.69414 5.98172 8.0207C5.30829 7.34883 4.93797 6.45352 4.93797 5.50195C4.93797 4.55039 5.30829 3.65508 5.98172 2.9832C6.6536 2.30977 7.54891 1.93945 8.50047 1.93945C9.45204 1.93945 10.3473 2.30977 11.0192 2.9832C11.6927 3.65508 12.063 4.55039 12.063 5.50195C12.063 6.45352 11.6927 7.34883 11.0192 8.0207Z" fill="white" />
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_277_360">
+                            <rect width="14" height="14" fill="white" />
+                        </clipPath>
+                    </defs>
+                </svg>
+                Problems
+            </button>
+            <button class="tabButton gap-x-1 pb-2 flex items-center font-semibold" data-tab="settings">
+                <svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" stroke-width="0.5" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_277_369)">
+                        <path d="M13.45 8.77891L12.4265 7.90391C12.475 7.60703 12.5 7.30391 12.5 7.00078C12.5 6.69766 12.475 6.39453 12.4265 6.09766L13.45 5.22266C13.5271 5.15657 13.5824 5.06856 13.6084 4.97031C13.6343 4.87206 13.6297 4.76824 13.5953 4.67266L13.5812 4.63203C13.2995 3.84457 12.8776 3.11459 12.3359 2.47734L12.3078 2.44453C12.2421 2.36727 12.1545 2.31173 12.0566 2.28523C11.9587 2.25873 11.855 2.26252 11.7593 2.29609L10.489 2.74766C10.0203 2.36328 9.49683 2.06016 8.9312 1.84766L8.68589 0.519531C8.66738 0.419597 8.61891 0.32766 8.5469 0.255934C8.4749 0.184208 8.38277 0.136089 8.28277 0.117969L8.24058 0.110156C7.42652 -0.0367187 6.57027 -0.0367187 5.7562 0.110156L5.71402 0.117969C5.61401 0.136089 5.52189 0.184208 5.44988 0.255934C5.37788 0.32766 5.3294 0.419597 5.31089 0.519531L5.06402 1.85391C4.5029 2.06645 3.98037 2.36941 3.51714 2.75078L2.23745 2.29609C2.14178 2.26225 2.03806 2.25833 1.9401 2.28484C1.84214 2.31136 1.75457 2.36705 1.68902 2.44453L1.66089 2.47734C1.11987 3.11504 0.698042 3.8449 0.415579 4.63203L0.401517 4.67266C0.331204 4.86797 0.389017 5.08672 0.546829 5.22266L1.58277 6.10703C1.53433 6.40078 1.51089 6.70078 1.51089 6.99922C1.51089 7.29922 1.53433 7.59922 1.58277 7.89141L0.546829 8.77578C0.469635 8.84187 0.414386 8.92988 0.388429 9.02813C0.362472 9.12637 0.367037 9.23019 0.401517 9.32578L0.415579 9.36641C0.698392 10.1539 1.11714 10.8805 1.66089 11.5211L1.68902 11.5539C1.75473 11.6312 1.8423 11.6867 1.94021 11.7132C2.03811 11.7397 2.14175 11.7359 2.23745 11.7023L3.51714 11.2477C3.98277 11.6305 4.50308 11.9336 5.06402 12.1445L5.31089 13.4789C5.3294 13.5788 5.37788 13.6708 5.44988 13.7425C5.52189 13.8142 5.61401 13.8623 5.71402 13.8805L5.7562 13.8883C6.57775 14.0359 7.41904 14.0359 8.24058 13.8883L8.28277 13.8805C8.38277 13.8623 8.4749 13.8142 8.5469 13.7425C8.61891 13.6708 8.66738 13.5788 8.68589 13.4789L8.9312 12.1508C9.4966 11.9388 10.023 11.6347 10.489 11.2508L11.7593 11.7023C11.855 11.7362 11.9587 11.7401 12.0567 11.7136C12.1546 11.6871 12.2422 11.6314 12.3078 11.5539L12.3359 11.5211C12.8796 10.8789 13.2984 10.1539 13.5812 9.36641L13.5953 9.32578C13.6656 9.13359 13.6078 8.91484 13.45 8.77891ZM11.3171 6.28203C11.3562 6.51797 11.3765 6.76016 11.3765 7.00234C11.3765 7.24453 11.3562 7.48672 11.3171 7.72266L11.214 8.34922L12.3812 9.34766C12.2043 9.7553 11.9809 10.1412 11.7156 10.4977L10.2656 9.98359L9.77495 10.3867C9.40152 10.693 8.98589 10.9336 8.53589 11.1023L7.94058 11.3258L7.66089 12.8414C7.21959 12.8914 6.77406 12.8914 6.33277 12.8414L6.05308 11.3227L5.46245 11.0961C5.01714 10.9273 4.60308 10.6867 4.23277 10.382L3.74214 9.97734L2.28277 10.4961C2.01714 10.1383 1.79527 9.75234 1.61714 9.34609L2.79683 8.33828L2.69527 7.71328C2.65777 7.48047 2.63745 7.23984 2.63745 7.00234C2.63745 6.76328 2.6562 6.52422 2.69527 6.29141L2.79683 5.66641L1.61714 4.65859C1.7937 4.25078 2.01714 3.86641 2.28277 3.50859L3.74214 4.02734L4.23277 3.62266C4.60308 3.31797 5.01714 3.07734 5.46245 2.90859L6.05464 2.68516L6.33433 1.16641C6.77339 1.11641 7.22183 1.11641 7.66245 1.16641L7.94214 2.68203L8.53745 2.90547C8.98589 3.07422 9.40308 3.31484 9.77652 3.62109L10.2671 4.02422L11.7171 3.51016C11.9828 3.86797 12.2046 4.25391 12.3828 4.66016L11.2156 5.65859L11.3171 6.28203ZM6.99995 4.09609C5.4812 4.09609 4.24995 5.32734 4.24995 6.84609C4.24995 8.36484 5.4812 9.59609 6.99995 9.59609C8.5187 9.59609 9.74995 8.36484 9.74995 6.84609C9.74995 5.32734 8.5187 4.09609 6.99995 4.09609ZM8.23745 8.08359C8.07514 8.24637 7.88225 8.37545 7.66988 8.4634C7.4575 8.55136 7.22982 8.59645 6.99995 8.59609C6.53277 8.59609 6.0937 8.41328 5.76245 8.08359C5.59968 7.92128 5.4706 7.72839 5.38265 7.51601C5.29469 7.30364 5.2496 7.07596 5.24995 6.84609C5.24995 6.37891 5.43277 5.93984 5.76245 5.60859C6.0937 5.27734 6.53277 5.09609 6.99995 5.09609C7.46714 5.09609 7.9062 5.27734 8.23745 5.60859C8.40023 5.7709 8.52931 5.9638 8.61726 6.17617C8.70522 6.38855 8.75031 6.61622 8.74995 6.84609C8.74995 7.31328 8.56714 7.75234 8.23745 8.08359Z" fill="white" />
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_277_369">
+                            <rect width="14" height="14" fill="white" />
+                        </clipPath>
+                    </defs>
+                </svg>
+                Settings
+            </button>
+        </div>
+
+        <div id="groupUtilsButton" class="flex gap-2" data-active-tab="members">
+            <button class="dependOnTab flex px-4 py-1 bg-white text-black text-sm gap-1 rounded items-center"
+                    data-members-url='@Url.Action("ExportContestParticipants", "ContestManagement")'
+                    data-problems-url='@Url.Action("ExportProblem", "ContestManagement")'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Export
+            </button>
+            <button id="importButton" class="dependOnTab flex px-4 py-1 bg-white text-black gap-1 flex items-center rounded text-sm"
+                    data-members-url='@Url.Action("OpenMembersImportModal", "ContestManagement")'
+                    data-problems-url='@Url.Action("OpenProblemsImportModal", "ContestManagement")'
+                    data-members-modal-id="memberImportModal"
+                    data-problems-modal-id="problemImportModal">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                </svg>
+                Import
+            </button>
+            <button id="addRowButton" class="dependOnTab flex px-4 py-1 bg-[#D9F275] text-black text-sm gap-1 rounded items-center"
+                    data-members-url='@Url.Action("OpenMembersModal", "ContestManagement")'
+                    data-problems-url='@Url.Action("OpenProblemsModal", "ContestManagement")'
+                    data-members-modal-id="memberAddOrUpdateModal"
+                    data-problems-modal-id="problemAddOrUpdateModal">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Add row
+            </button>
+            <button class="flex px-4 py-1 bg-white text-black text-sm gap-1 rounded items-center"
+                    onclick="openModal('@Url.Action("OpenDeleteModal", "ContestManagement")', 'deleteModal')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>
+                Delete rows
+            </button>
+        </div>
+    </div>
+
+    <div class="py-4">
+        <div id="members" class="tabContent ">
+        </div>
+        <div id="problems" class="tabContent hidden">
+        </div>
+        <div id="settings" class="tabContent hidden">
+            @await Html.PartialAsync("Tabs/_Settings")
+        </div>
+    </div>
+
+    <form id="exportMemberOrProblemForm" method="POST" class="hidden">
+        <input type="hidden" name="contestId" value="@Model.id" />
+    </form>
+</div>
+<div id="modalContainer"></div>
+<div id="sub-modalContainer"></div>
+<script>
+    let problemsArray = @Json.Serialize(Model.problems.Items) ?? [];
+    let membersArray = @Json.Serialize(Model.participants.Items) ?? [];
+    let testcasesArray = [];
+    let settings = {
+        contest_type: Number('@Model.contest_type'),
+        grading_type: Number('@Model.grading_type'),
+        leaderboard_enabled: Boolean('@Model.leaderboard_enabled'),
+        plagiarism_detection_enabled: Boolean('@Model.plagiarism_detection_enabled')
+    };
+
+    let originalProblemsArray = structuredClone(problemsArray);
+    let originalMembersArray = structuredClone(membersArray);
+    let originalTestcasesArray = [];
+    let originalSettings = structuredClone(settings);
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const buttons = document.querySelectorAll(".tabButton");
+        const contents = document.querySelectorAll(".tabContent");
+        const addRowButton = document.getElementById("addRowButton");
+        const grUtilsButton = document.getElementById("groupUtilsButton");
+        const exportbutton = document.getElementById("exportButton");
+
+        //fetch tabs
+        fetchMembersTabWithPage(1);
+        fetchProblemsTabWithPage(1);
+
+        //populate hidden input
+        document.getElementById("problemsData").value = JSON.stringify(problemsArray);
+        document.getElementById("membersData").value = JSON.stringify(membersArray);
+        document.getElementById("settingsData").value = JSON.stringify(settings);
+
+        buttons.forEach(button => {
+            button.addEventListener("click", () => {
+                let tab = button.getAttribute("data-tab");
+                buttons.forEach(btn => btn.classList.remove("border-b", "border-[#D9F275]", "text-[#D9F275]"));
+                button.classList.add("border-b", "border-[#D9F275]", "text-[#D9F275]");
+
+                contents.forEach(content => content.classList.add("hidden"));
+                document.getElementById(tab).classList.remove("hidden");
+
+                grUtilsButton.setAttribute("data-active-tab", tab);
+
+                grUtilsButton.querySelectorAll("button").forEach(btn => btn.disabled = (tab === "settings"));
+                grUtilsButton.classList.toggle("opacity-50", tab === "settings");
+            });
+        });
+
+        grUtilsButton.querySelectorAll(".dependOnTab").forEach((element) => {
+            element.addEventListener("click", (event) => {
+                const activeTab = grUtilsButton.getAttribute("data-active-tab");
+                let url = "";
+                let modalId = "";
+                switch (activeTab) {
+                    case "members":
+                        url = event.target.getAttribute("data-members-url");
+                        modalId = event.target.getAttribute("data-members-modal-id");
+
+                        if(!url.includes("Export")){
+                            openModal(url, modalId);
+                        }else{
+                            const exportForm = document.getElementById("exportMemberOrProblemForm")
+                            exportForm.action = url;
+                            exportForm.submit();
+                        }
+                        break;
+                    case "problems":
+                        url = event.target.getAttribute("data-problems-url");
+                        modalId = event.target.getAttribute("data-problems-modal-id");
+
+                        //if modalId == problemAddOrUpdateModal -> add problem modal -> then empty testcasesArray
+                        if(modalId == "problemAddOrUpdateModal"){
+                            testcasesArray = [];
+                            originalTestcasesArray = [];
+                        }
+
+                        if(!url.includes("Export")){
+                            openModal(url, modalId);
+                        }else{
+                            console.log("Export Problem")
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            });
+        });
+    });
+
+    //if API return errors, fetch these tabs with no pagination, i.e. ViewData["IsDrafted"] is true
+    function fetchMembersTabWithPage(page_index = 1, page_size = 5) {
+        if(Boolean('@ViewData["IsDrafted"]')) {
+            fetchPaginatedTabs("@Url.Action("GetMembersTab", "ContestManagement")", membersArray, "members", 1, 1000, true);
+            return;
+        }
+        fetchPaginatedTabs("@Url.Action("GetMembersTab", "ContestManagement")", membersArray, "members", page_index, page_size, !isOriginal(originalMembersArray, membersArray));
+    }
+
+    function fetchProblemsTabWithPage(page_index = 1, page_size = 5) {
+        if(Boolean('@ViewData["IsDrafted"]')) {
+            fetchPaginatedTabs("@Url.Action("GetProblemsTab", "ContestManagement")", problemsArray, "problems", 1, 1000, true);
+            return;
+        }
+        fetchPaginatedTabs("@Url.Action("GetProblemsTab", "ContestManagement")", problemsArray, "problems", page_index, page_size, !isOriginal(originalProblemsArray, problemsArray));
+    }
+
+    function fetchTestcasesTabWithPage(page_index = 1, page_size = 5) {
+        if(Boolean('@ViewData["IsDrafted"]')) {
+            fetchPaginatedTabs("@Url.Action("GetTestcasesTab", "ContestManagement")", testcasesArray, "testcases", 1, 1000, true);
+            return;
+        }
+        fetchPaginatedTabs("@Url.Action("GetTestcasesTab", "ContestManagement")", testcasesArray, "testcases", page_index, page_size, !isOriginal(originalTestcasesArray, testcasesArray));
+    }
+
+    function isOriginal(a, b) {
+        // if(Boolean('@ViewData["IsDrafted"]')) return false;
+        return JSON.stringify(a) === JSON.stringify(b);
+    };
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const startTimeInput = document.getElementById("start_at");
+        const endTimeInput = document.getElementById("end_at");
+        const durationInput = document.getElementById("duration");
+
+        function updateEndTime() {
+            let startTime = new Date(startTimeInput.value);
+            let duration = parseInt(durationInput.value) || 0;
+            if (!isNaN(startTime.getTime())) {
+                let endTime = new Date(startTime.getTime() + duration * 60000 - startTime.getTimezoneOffset() * 60000);
+                endTimeInput.value = endTime.toISOString().slice(0, 16);
+            }
+        }
+
+        function updateDuration() {
+            let startTime = new Date(startTimeInput.value);
+            console.log(startTimeInput.value)
+            let endTime = new Date(endTimeInput.value);
+            if (!isNaN(startTime.getTime()) && !isNaN(endTime.getTime())) {
+                let duration = (endTime - startTime) / 60000;
+                durationInput.value = duration;
+            }
+        }
+
+        // Event Listeners
+        startTimeInput.addEventListener("change", updateEndTime);
+        durationInput.addEventListener("input", updateEndTime);
+        endTimeInput.addEventListener("change", updateDuration);
+    });
+</script>
+

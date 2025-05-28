@@ -1,0 +1,13 @@
+﻿@{
+    Layout = "~/Views/Shared/Modals/_BaseModal.cshtml";
+    ViewData["ModalId"] = "deleteModal";
+    ViewData["Title"] = "Are you sure you want to delete this";
+    ViewData["SubmitButtonId"] = "deleteConfirmBtn";
+    ViewData["ShowSubmitButton"] = true;
+}
+
+<div>
+    <span class="text-semibold text-red-700">Warning</span>
+    <span class="italic">Are you sure you want to delete these selected rows? This action cannot be undone</span>
+</div>
+

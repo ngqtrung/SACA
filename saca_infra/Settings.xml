@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Settings>
+	<Setting key="config_mail_email" value="hunglmhe171165@fpt.edu.vn" />
+	<Setting key="config_mail_password" value="mvke vgvd qytb kfee" />
+	<Setting key="config_mail_smtp_port" value="587" />
+	<Setting key="config_mail_smtp_host" value="smtp.gmail.com" />
+	<Setting key="config_mail_fullname" value="SACA Admin" />
+
+	<Setting key="config_google_drive_client_id" value="your-client-id" />
+	<Setting key="config_google_drive_client_secret" value="your-client-secret" />
+	
+	<Setting key="config_judge0_api_url" value="http://localhost:2358" />
+	
+	<Setting key="config_user_delete_after_exam_hours" value="24" />
+	<Setting key="config_user_reset_student_enabled" value="true" />
+</Settings>

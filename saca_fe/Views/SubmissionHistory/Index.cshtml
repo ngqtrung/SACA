@@ -1,0 +1,223 @@
+﻿@using SACA_Common.DTOs
+@using SACA_Common.DTOs.Submission.Request
+@using SACA_Common.DTOs.Submission.Response
+@using SACA_Common.Enums
+@using SACA_Common.Utils
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@using SACA_FE.Utils
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    var userInfo = TokenUtils.GetUserInfo(HttpContextAccessor.HttpContext);
+}
+﻿@{
+    ViewData["Title"] = "Submission History";
+    Layout = "_Layout";
+    ViewBag.ShowNavTab = true;
+    ViewBag.ActiveTab = "submission-history";
+    string? keyword = Context.Request.Query["keyword"];
+    string? status = Context.Request.Query["status"];
+    string? programming_language = Context.Request.Query["programming_language"];
+}
+@model PagedResponse<SubmissionTableView>
+@section BootstrapStyles {
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+}
+<div>
+    <div class="mb-4 flex items-center justify-end">
+        <button id="filter-btn" class="bg-gray-200 text-gray-800 py-2 px-4 rounded">Filter</button>
+
+        @if (userInfo.role == "Lecturer")
+        {
+            <button id="resubmit-btn" class="bg-gray-200 text-gray-800 py-2 px-4 rounded ml-3">Re-grade</button>
+            <form id="resubmitForm" method="post" asp-route-ContestId="@ViewBag.ContestId" asp-controller="SubmissionHistory" asp-action="ResubmitSolution">
+
+                <input type="hidden" name="contestId" value="@ViewBag.ContestId" />
+                <input type="hidden" name="submissionIds" id="submissionIdsInput" />
+            </form>
+        }
+
+    </div>
+    <div class="p-7 bg-white w-full rounded-md">
+        <!-- Filter Modal -->
+        <div id="filterModal" class="inset-0 bg-gray-800 text-gray-600 fixed z-10 flex hidden items-center justify-center bg-opacity-50">
+            <div class="bg-white w-96 p-4 rounded-lg shadow-lg">
+                <h2 class="mb-4 text-lg font-bold">Filter Contests</h2>
+                <form id="filterForm" method="get" action="@Url.Action("Index", "SubmissionHistory",new { ContestId = ViewBag.ContestId,  request = new SubmissionTableFilter { contest_id = ViewBag.ContestId, keyword=keyword}} )">
+                    <div class="mb-3">
+                        <label for="keyword" class="text-gray-700 block text-sm font-medium">Search For</label>
+                        <input type="text" value="@keyword" name="keyword" id="keyword" class="px-3 py-2 w-full rounded border">
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="text-gray-700 block text-sm font-medium">Status</label>
+                        <select name="status" id="status" class="px-3 py-2 w-full rounded border">
+                            <option value="">-- Select Status --</option>
+                            @foreach (eStatus_Submission st in Enum.GetValues(typeof(eStatus_Submission)))
+                            {
+                                <option selected="@(status==((int)st).ToString())" value="@((int)st)">@st</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="programming_language" class="text-gray-700 block text-sm font-medium">Programming Language</label>
+                        <select name="programming_language" id="programming_language" class="px-3 py-2 w-full rounded border">
+                            <option value="">-- Select Programming Language --</option>
+                            @foreach (eType_ContestProgrammingLanguage language in Enum.GetValues(typeof(eType_ContestProgrammingLanguage)))
+                            {
+                                <option selected="@(programming_language==((int)language).ToString())" value="@((int)language)">@language</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="space-x-2 flex justify-end">
+                        <button type="button" class="bg-gray-200 text-gray-800 py-2 px-4 rounded" onclick="closeFilterModal()">Cancel</button>
+                        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Apply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <table class="border-gray-300 text-black w-full border-collapse border text-left">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border-gray-300 px-4 py-2 border">
+                        <input type="checkbox" id="select-all" />
+                    </th>
+                    <th class="border-gray-300 px-4 py-2 border">#</th>
+                    <th class="border-gray-300 px-4 py-2 border">Submit Time</th>
+                    <th class="border-gray-300 px-4 py-2 border">Account</th>
+                    <th class="border-gray-300 px-4 py-2 border">FullName</th>
+                    <th class="border-gray-300 px-4 py-2 border">Problem</th>
+                    <th class="border-gray-300 px-4 py-2 border">Language</th>
+                    <th class="border-gray-300 px-4 py-2 border">Status</th>
+                    <th class="border-gray-300 px-4 py-2 border">Score</th>
+                    <th class="border-gray-300 px-4 py-2 border">Time</th>
+                    <th class="border-gray-300 px-4 py-2 border">Memory</th>
+                    <th class="border-gray-300 px-4 py-2 border">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items!.Any())
+                {
+                    int index = 1;
+                    foreach (var submission in Model.Items!)
+                    {
+                        <tr class="hover:bg-gray-50">
+                            <td class="border-gray-300 px-4 py-2 border">
+                                <input type="checkbox" class="submission-checkbox" value="@submission.id" />
+                            </td>
+                            <td class="border-gray-300 px-4 py-2 border">@(index++)</td>
+                            <td class="border-gray-300 px-4 py-2 border">@submission.submitted_at</td>
+                            <td class="border-gray-300 px-4 py-2 border">@submission.submitted_by</td>
+                            <td class="border-gray-300 px-4 py-2 border">@submission.submitted_by_name</td>
+                            <td class="border-gray-300 px-4 py-2 border">@submission.problem_title</td>
+                            <td class="border-gray-300 px-4 py-2 border">@(((eType_ContestProgrammingLanguage)submission.programming_language).GetDescription())</td>
+                            <td class="border-gray-300 px-4 py-2 border">
+                                @switch ((eStatus_Submission)submission.status)
+                                {
+                                    case eStatus_Submission.InQueue:
+                                        <span class="text-yellow-500">In Queue</span>
+                                        break;
+                                    case eStatus_Submission.Running:
+                                        <span class="text-blue-500">Running</span>
+                                        break;
+                                    case eStatus_Submission.Accepted:
+                                        <span class="text-green-500 font-bold">Accepted</span>
+                                        break;
+                                    case eStatus_Submission.WrongAnswer:
+                                        <span class="text-red-500">Wrong Answer</span>
+                                        break;
+                                    case eStatus_Submission.CompileError:
+                                        <span class="text-orange-500">Compile Error</span>
+                                        break;
+                                    case eStatus_Submission.RuntimeError:
+                                        <span class="text-purple-500">Runtime Error</span>
+                                        break;
+                                    case eStatus_Submission.TimeLimitExceeded:
+                                        <span class="text-pink-500">Time Limit Exceeded</span>
+                                        break;
+                                    case eStatus_Submission.MemoryLimitExceeded:
+                                        <span class="text-indigo-500">Memory Limit Exceeded</span>
+                                        break;
+                                    case eStatus_Submission.PartialAccepted:
+                                        <span class="text-teal-500">Partial Accepted</span>
+                                        break;
+                                    case eStatus_Submission.SystemError:
+                                        <span class="text-gray-500">System Error</span>
+                                        break;
+                                    default:
+                                        <span class="text-black">Unknown</span>
+                                        break;
+                                }
+                            </td>
+                            <td class="border-gray-300 px-4 py-2 border">@submission.score</td>
+                            <td class="border-gray-300 px-4 py-2 border">@submission.runinng_time ms</td>
+                            <td class="border-gray-300 px-4 py-2 border">@submission.running_memory kb</td>
+                            <td class="border-gray-300 px-4 py-2 border">
+                                <div class="space-x-2 flex">
+                                    <a asp-action="Detail"
+                                       asp-controller="SubmissionHistory"
+                                       asp-route-id="@submission.id"
+                                       asp-route-ContestId="@ViewBag.ContestId"
+                                       class="text-green-500 hover:underline">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="10" class="border-gray-300 px-4 py-2 text-gray-500 border text-center">
+                            No submissions available.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="w-full">
+            @Html.PagedListPager(
+                     new StaticPagedList<SubmissionTableView>(Model.Items, Model.page_index, Model.page_size, Model.total_items),
+                     page => Url.Action("Index", new { page_index = page, page_size = Model.page_size, keyword, programming_language, status }),
+                     new PagedListRenderOptions
+            {
+                DisplayLinkToIndividualPages = true,
+                MaximumPageNumbersToDisplay = 5,
+                ContainerDivClasses = new[] { "flex justify-end mt-4 text-black" },
+                UlElementClasses = new[] { "pagination" },
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" }
+            }
+                     )
+        </div>
+    </div>
+</div>
+@if (userInfo.role == "Lecturer")
+{
+    <script>
+        document.getElementById("select-all").addEventListener("change", function () {
+            const isChecked = this.checked;
+            document.querySelectorAll(".submission-checkbox").forEach(cb => cb.checked = isChecked);
+        });
+
+        document.getElementById("resubmit-btn").addEventListener("click", function () {
+            const checkboxes = document.querySelectorAll(".submission-checkbox:checked");
+            const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+            const hiddenInput = document.getElementById("submissionIdsInput");
+
+            if (selectedIds.length === 0) {
+                if (confirm("Do you want to re-grade all submissions?")) {
+                    hiddenInput.value = ""; // để trống nếu muốn re-grade toàn bộ
+                    document.getElementById("resubmitForm").submit();
+                }
+            } else {
+                hiddenInput.value = selectedIds.join(",");
+                document.getElementById("resubmitForm").submit();
+            }
+        });
+    </script>
+}
+

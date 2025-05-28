@@ -1,0 +1,13 @@
+﻿services:
+  saca_api:
+    image: saca_api:latest
+    build:
+      context: ../
+      dockerfile: ./saca_api/Dockerfile
+    ports:
+      - "5000:5000"
+      - "4999:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - /home/itchn/backend-v2/saca_api/logs:/app/logs

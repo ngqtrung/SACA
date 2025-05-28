@@ -1,0 +1,378 @@
+﻿@using SACA_Common.DTOs.LeaderBoard.Response
+@using SACA_Common.DTOs.Submission.Response
+@using SACA_Common.Enums
+@using SACA_FE.Utils
+@model LeaderBoardTableView
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    var userInfo = TokenUtils.GetUserInfo(HttpContextAccessor.HttpContext);
+}
+@{
+    ViewData["Title"] = "Leader Board";
+    Layout = "_Layout";
+    ViewBag.ShowNavTab = true;
+    ViewBag.ActiveTab = "ranking";
+    string defaultUniversity = "FPT University";
+}
+<!-- CSS --><!-- CSS -->
+<style>
+    .leader-card {
+        width: 10rem;
+        background: white;
+        padding: 1rem;
+        border-radius: 1rem;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transform: translateY(30px);
+        opacity: 0;
+        transition: all 0.6s ease;
+    }
+
+        .leader-card:hover {
+            transform: scale(1.05) translateY(0);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+    .top1-card {
+        transform: translateY(-20px);
+    }
+
+    .avatar {
+        width: 4rem;
+        height: 4rem;
+        margin: 0 auto 0.5rem;
+        border-radius: 9999px;
+        overflow: hidden;
+        border: 3px solid #fff;
+    }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .big-avatar {
+        width: 5rem;
+        height: 5rem;
+        border: 4px solid #fff;
+    }
+
+    .badge {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .name {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .username,
+    .university {
+        font-size: 0.85rem;
+        color: #555;
+    }
+
+    .score {
+        font-weight: 600;
+        color: #1d4ed8;
+        font-size: 0.9rem;
+        margin-top: 0.3rem;
+    }
+
+    .gold-card {
+        background: linear-gradient(to bottom, #fde68a, #fef3c7);
+        border: 2px solid #fbbf24;
+    }
+
+    .silver-card {
+        background: linear-gradient(to bottom, #e5e7eb, #f3f4f6);
+        border: 2px solid #9ca3af;
+    }
+
+    .bronze-card {
+        background: linear-gradient(to bottom, #fcd9b6, #fde9d5);
+        border: 2px solid #d97706;
+    }
+
+    .show {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+    }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ant-design-icons/4.7.0/anticons.min.css" />
+<div class="bg-gray-100 text-gray-900 p-6 mx-auto rounded-lg shadow-md">
+    <button id="exportButton"
+            class="bg-blue-500 text-white py-2 px-4 rounded text-sm font-medium transition hover:bg-blue-600">
+        Download
+    </button>
+    <div class="bg-gray-100 text-gray-900 p-6 mx-auto rounded-lg shadow-md">
+        <div class="gap-6 flex flex-col items-end justify-center md:flex-row" id="leaderboardCards">
+            @if (Model.rows.Count > 0)
+            {
+                var topList = Model.rows.OrderByDescending(r => r.total_score).ThenBy(r => r.total_penaty).Take(3).ToList();
+                var top2 = topList.ElementAtOrDefault(1);
+                var top1 = topList.ElementAtOrDefault(0);
+                var top3 = topList.ElementAtOrDefault(2);
+
+                if (top2 != null)
+                {
+                    <div class="leader-card silver-card">
+                        <div class="badge"><i class="anticon anticon-crown"></i> Top 2 🥈</div>
+                        <div class="avatar">
+                            <img src="/img/avatar_user.png" alt="@top2.fullname" />
+                        </div>
+                        <div class="name">@top2.fullname</div>
+                        <div class="username">@top2.username</div>
+                        <div class="university">@defaultUniversity</div>
+                        <div class="score">@top2.total_score score</div>
+                    </div>
+                }
+
+                if (top1 != null)
+                {
+                    <div class="leader-card gold-card top1-card md:-translate-y-6">
+                        <div class="badge"><i class="anticon anticon-crown"></i> Top 1 🥇</div>
+                        <div class="avatar big-avatar">
+                            <img src="/img/avatar_user.png" alt="@top1.fullname" />
+                        </div>
+                        <div class="name">@top1.fullname</div>
+                        <div class="username">@top1.username</div>
+                        <div class="university">@defaultUniversity</div>
+                        <div class="score">@top1.total_score score</div>
+                    </div>
+                }
+
+                if (top3 != null)
+                {
+                    <div class="leader-card bronze-card">
+                        <div class="badge"><i class="anticon anticon-crown"></i> Top 3 🥉</div>
+                        <div class="avatar">
+                            <img src="/img/avatar_user.png" alt="@top3.fullname" />
+                        </div>
+                        <div class="name">@top3.fullname</div>
+                        <div class="username">@top3.username</div>
+                        <div class="university">@defaultUniversity</div>
+                        <div class="score">@top3.total_score score</div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-gray-500 text-center md:col-span-3">No participants yet.</div>
+            }
+        </div>
+    </div>
+
+    @if (userInfo.role == "Lecturer")
+    {
+        <form method="post" action="@Url.Action("FrozenContest", "ContestManagement")">
+            <input type="hidden" name="contestId" value="@Model.contest_id" />
+
+            <div class="mt-6 flex justify-end">
+                <!-- Nút submit thật sự -->
+                <button type="submit"
+                        class="px-4 py-2 rounded text-white
+                       @(Model.is_fronzen ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600")">
+                    @(Model.is_fronzen ? "Unfrozen" : "Frozen")
+                </button>
+
+                <!-- Nút không submit -->
+                <button type="button" id="checkPlagiarismBtn"
+                        class="bg-purple-600 text-white py-2 px-4 rounded text-sm font-medium hover:bg-purple-700 ml-2">
+                    Check Plagiarism
+                </button>
+            </div>
+        </form>
+
+        <div id="plagiarismModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 items-center justify-center">
+            <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
+                <h2 class="text-xl font-semibold mb-4">Check Plagiarism</h2>
+                <form method="post" asp-action="CheckPlagiarism" asp-controller="Ranking" asp-route-ContestId="@ViewBag.ContestId">
+                    <input type="hidden" name="contest_id" value="@ViewBag.ContestId" />
+
+                    <div class="mb-4">
+                        <label for="problem_id" class="block text-sm font-medium text-gray-700 mb-1">Problem</label>
+                        <select name="problem_id" id="problem_id"
+                                class="w-full border px-3 py-2 rounded text-sm focus:ring focus:ring-purple-400">
+                            <option value="">-- All Problems --</option>
+                            @foreach (var problem in ViewBag.Problems)
+                            {
+                                <option value="@problem.id">@problem.code</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="programing_language" class="block text-sm font-medium text-gray-700 mb-1">Programming Language</label>
+                        <select name="programing_language" id="programing_language"
+                                class="w-full border px-3 py-2 rounded text-sm focus:ring focus:ring-purple-400">
+                            <option value="">-- Select Language --</option>
+                            @foreach (var lang in ViewBag.AvailLanguages)
+                            {
+                                <option value="@((int)lang)">@lang.ToString()</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" id="cancelPlagiarismBtn"
+                                class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 text-sm">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm">
+                            Submit
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+    }
+
+    <div class="overflow-x-auto rounded-lg shadow-sm">
+        <table class="divide-gray-200 bg-white min-w-full divide-y text-left">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th scope="col" class="px-4 py-3 text-gray-700 text-xs font-semibold uppercase tracking-wider">
+                        #
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-gray-700 text-xs font-semibold uppercase tracking-wider">
+                        Account
+                    </th>
+                    @foreach (var problem in Model.problems)
+                    {
+                        <th scope="col" class="px-4 py-3 text-gray-700 text-center text-xs font-semibold uppercase tracking-wider">
+                            @problem.code
+                        </th>
+                    }
+                    <th scope="col" class="px-4 py-3 text-gray-700 text-right text-xs font-semibold uppercase tracking-wider">
+                        Total score
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-gray-200 divide-y">
+                @if (Model.rows != null && Model.rows.Any())
+                {
+                    @for (int i = 0; i < Model.rows.Count; i++)
+                    {
+                        var row = Model.rows[i];
+                        <tr class="@(i % 2 == 0 ? "bg-white" : "bg-gray-50")">
+                            <td class="px-4 py-3 text-gray-900 whitespace-nowrap text-sm font-medium">
+                                @(i + 1)
+                            </td>
+                            <td class="px-4 py-3 text-gray-700 whitespace-nowrap text-sm">
+                                <div class="font-bold">@row.fullname</div>
+                                <div class="text-gray-800 text-xs">@row.username</div>
+                                <div class="text-gray-800 text-xs">@defaultUniversity</div>
+                            </td>
+                            @foreach (var problem in Model.problems)
+                            {
+                                var detail = row.details.FirstOrDefault(d => d.problem_id == problem.id);
+                                <td class="px-4 py-3 whitespace-nowrap text-center text-sm">
+                                    @if (detail != null)
+                                    {
+                                        if (!Model.is_fronzen || detail.frozen_score == problem.score || userInfo.role == "Lecturer")
+                                        {
+                                            <div class="font-semibold text-blue-600">@detail.score</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="font-semibold text-blue-600/50">@detail.frozen_score</div>
+                                        }
+                                        <div class="text-xs text-gray-800">@detail.complete_time.ToString(@"hh\:mm\:ss")</div>
+                                        <div class="text-xs text-gray-800">@detail.number_of_attempts times</div>
+
+                                        @if (userInfo.role == "Lecturer")
+                                        {
+                                            <a asp-action="Detail"
+                                               asp-controller="SubmissionHistory"
+                                               asp-route-id="@detail.submission_id"
+                                               asp-route-ContestId="@ViewBag.ContestId"
+                                               class="text-xs text-purple-700 underline block mb-1">View</a>
+
+                                            @if (!string.IsNullOrEmpty(detail.plagiarism_submission_id))
+                                            {
+                                                <div class="text-xs text-red-600">
+                                                    Plagiarized from:
+                                                    <a asp-action="Detail"
+                                                       asp-controller="SubmissionHistory"
+                                                       asp-route-id="@detail.plagiarism_submission_id"
+                                                       asp-route-ContestId="@ViewBag.ContestId"
+                                                       class="underline">here</a>
+                                                </div>
+                                                <div class="text-xs text-red-500">
+                                                    Avg: @((detail.plagiarism_avg*100)?.ToString("0.##") ?? "-")%, Max: @((detail.plagiarism_max*100)?.ToString("0.##") ?? "-")%
+                                                </div>
+                                            }
+                                        }
+                                    }
+
+                                    else
+                                    {
+                                        <div class="text-gray-500">-</div>
+                                    }
+                                </td>
+                            }
+                            <td class="px-4 py-3 text-blue-600 whitespace-nowrap text-right text-sm font-semibold">
+                                @row.total_score
+                                @if (row.total_penaty > 0)
+                                {
+                                    <div class="text-gray-800 text-xs">(@TimeSpan.FromSeconds(row.total_penaty).ToString(@"mm\:ss") penalty)</div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="@(2 + Model.problems.Count + 1)" class="px-4 py-4 text-gray-500 text-center">
+                            No data available.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll("#leaderboardCards .leader-card");
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add("show");
+            }, index * 300);
+        });
+    });
+</script>
+<script>
+
+    const modal = document.getElementById('plagiarismModal');
+    const openBtn = document.getElementById('checkPlagiarismBtn');
+    const closeBtn = document.getElementById('cancelPlagiarismBtn');
+
+    openBtn.addEventListener('click', () => {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    });
+    document.getElementById('exportButton').addEventListener('click', function () {
+        const url = '@Url.Action("Index", "Ranking", new { ContestId = Model.contest_id })';
+        window.location.href = url; // Tải file mà không cần refresh trang
+    });
+</script>

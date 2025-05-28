@@ -1,0 +1,169 @@
+﻿@using SACA_Common.Enums
+@using SACA_Common.Utils
+@model SACA_Common.DTOs.Problem.Response.ProblemView
+@{
+    Layout = "_Layout";
+    ViewBag.ShowNavTab = true;
+    ViewBag.ActiveTab = "problems";
+    var availLanguages = ViewData["AvailLanguages"] as List<eType_ContestProgrammingLanguage> ?? new List<eType_ContestProgrammingLanguage>();
+}
+@section JSLib {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/clike/clike.min.js"></script>
+}
+<div class="gap-6 mx-auto grid grid-cols-3">
+    <!-- LEFT CONTENT: PROBLEM DETAIL -->
+    <div class="col-span-2">
+        <div class="bg-white p-5 rounded shadow-sm">
+            <!-- Phần hiển thị mã code riêng biệt với kích thước lớn hơn -->
+            <div class="mb-4">
+                <span class="text-gray-700 block text-3xl font-bold">@Model.code</span>
+            </div>
+
+            <!-- Tiêu đề và nút Download -->
+            <div class="mb-2 flex items-center justify-between">
+                <h1 class="text-gray-700 text-2xl font-bold">@Model.title</h1>
+                @if (!string.IsNullOrEmpty(Model.file_id))
+                {
+                    <button class="bg-gray-200 text-gray-700 py-2 px-4 rounded text-sm transition hover:bg-gray-300">
+                        Download given materials
+                    </button>
+                }
+            </div>
+
+            <!-- Thông tin cơ bản (Score, Max Attempts) -->
+            <div class="text-gray-500 mb-4 text-sm">
+                <p>Score: <strong>@Model.score</strong></p>
+                @if (Model.max_attempts.HasValue)
+                {
+                    <p>Max attempts: <strong>@Model.max_attempts</strong></p>
+                }
+            </div>
+
+            <!-- Mô tả bài toán & Ghi chú -->
+            <div class="mb-6">
+                <!-- Tiêu đề "Description" -->
+                <h3 class="text-gray-700 mb-2 text-lg font-semibold">Description</h3>
+                <!-- Nội dung mô tả -->
+                <div class="mb-4" style="color: black !important;">
+                    @Html.Raw(Model.description)
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.note))
+                {
+                    <!-- Tiêu đề "Note" -->
+                    <h3 class="text-gray-700 mb-2 text-lg font-semibold">Note</h3>
+                    <!-- Nội dung Note -->
+                    <div class="mb-4" style="color: black !important;">
+                        @Html.Raw(Model.note)
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT CONTENT: SUBMIT & INFORMATION (tùy chọn) -->
+    <div class="space-y-6 col-span-1">
+        <!-- Ví dụ phần Submit -->
+        <form method="post" action="@Url.Action($"SubmitSolution", $"Problems", new {contestId = Model.contest_id, problemId = Model.id})" class="bg-white p-5 rounded shadow-sm">
+            <h2 class="text-gray-800 mb-4 text-lg font-semibold">Submit</h2>
+            <!-- Chọn ngôn ngữ -->
+            <input type="text" name="problem_id" value="@Model.id" hidden />
+            <input type="text" name="contestId" value="@Model.contest_id" hidden />
+            <textarea type="text" name="source_code" id="source-code" value="@Model.id" hidden></textarea>
+            <label class="mb-4 block">
+                <span class="text-gray-700 text-sm font-medium">
+                    Programming language <span class="text-red-500">*</span>
+                </span>
+                <select class="p-2 text-gray-800 w-full rounded border" name="programming_language">
+                    @foreach (var lang in availLanguages)
+                    {
+                        <option value="@((int)lang)">@lang.GetDescription()</option>
+                    }
+                </select>
+            </label>
+            <label class="mb-4 block">
+                <span class="text-gray-700 flex items-center text-sm font-medium">
+                    <!-- Icon upload -->
+                    <i class="fas fa-upload mr-2"></i> Upload your solution <span class="text-red-500">*</span>
+                </span>
+                <div class="mt-1 relative">
+                    <!-- Ẩn file input gốc -->
+                    <input type="file" id="fileInput" name="fileInput" class="hidden">
+                    <!-- Label custom -->
+                    <label for="fileInput" class="border-gray-300 py-2 text-black flex w-full cursor-pointer items-center justify-center rounded-md border border-dashed text-sm hover:border-gray-400">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i>
+                        <span>Select file</span>
+                    </label>
+                    <!-- Hiển thị tên file -->
+                    <p id="fileName" class="text-gray-500 mt-1 text-xs"></p>
+                </div>
+            </label>
+            <!-- Nút Submit -->
+            <button class="bg-lime-400 text-gray-800 py-2 px-4 w-full rounded text-sm font-medium transition hover:bg-lime-500">
+                Submit
+            </button>
+        </form>
+
+        <!-- Phần Thông tin -->
+        <div class="bg-white p-5 rounded shadow-sm">
+            <h2 class="text-gray-800 mb-4 text-lg font-semibold">Information</h2>
+            <ul class="space-y-2 text-sm">
+                <!-- Score -->
+                <li class="space-x-2 text-gray-600 flex items-center">
+                    <i class="fas fa-trophy text-red-500"></i>
+                    <span>Score: <span class="text-black font-medium">@Model.score</span></span>
+                </li>
+                <!-- Time limit per test (fix cứng) -->
+                <li class="space-x-2 text-gray-600 flex items-center">
+                    <i class="fas fa-clock text-red-500"></i>
+                    <span>Time limit per test: <span class="text-black font-medium">@Model.default_execution_time ms</span></span>
+                </li>
+                <!-- Memory limit per test (fix cứng) -->
+                <li class="space-x-2 text-gray-600 flex items-center">
+                    <i class="fas fa-memory text-red-500"></i>
+                    <span>Memory limit per test: <span class="text-black font-medium">@Model.default_memory_limit KB</span></span>
+                </li>
+                <!-- Input (fix cứng) -->
+                <li class="space-x-2 text-gray-600 flex items-center">
+                    <i class="fas fa-sign-in-alt text-red-500"></i>
+                    <span>Input: <span class="text-black font-medium">stdin</span></span>
+                </li>
+                <!-- Output (fix cứng) -->
+                <li class="space-x-2 text-gray-600 flex items-center">
+                    <i class="fas fa-sign-out-alt text-red-500"></i>
+                    <span>Output: <span class="text-black font-medium">stdout</span></span>
+                </li>
+
+                <li class="space-x-2 text-gray-600 flex items-center">
+                    <i class="fas fa-code text-red-500"></i>
+                    <span>
+                        Programming language: <span class="text-black font-medium">@string.Join(", ", availLanguages)</span>
+                    </span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.getElementById("fileInput").addEventListener("change", function () {
+        let fileName = this.files.length > 0 ? this.files[0].name : "No file selected";
+        document.getElementById("fileName").innerText = fileName;
+    });
+</script>
+<script>
+    var editor = document.getElementById('source-code');
+    document.getElementById('fileInput').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            editor.value = e.target.result;
+        };
+
+        reader.readAsText(file);
+    });
+</script>

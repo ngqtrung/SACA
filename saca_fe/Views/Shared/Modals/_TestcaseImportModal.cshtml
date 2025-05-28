@@ -1,0 +1,54 @@
+﻿@{
+    Layout = "~/Views/Shared/Modals/_BaseModal.cshtml";
+    ViewData["ModalId"] = "testcaseImportModal";
+    ViewData["Title"] =  "Import Testcase Modal";
+    ViewData["SubmitButtonId"] = "importTestcaseBtn";
+    ViewData["ShowSubmitButton"] = true;
+    ViewData["Size"] = "sm";
+    ViewData["IsForm"] = true;
+    ViewData["IsMultipartForm"] = true;
+}
+@model SACA_Common.DTOs.TestCase.Request.TestCaseImporting
+
+<div class="mb-4">
+    <label asp-for="import_file" class="block text-sm font-medium text-gray-700">Upload File</label>
+    <input asp-for="import_file" type="file" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm" accept="zip" />
+    <span asp-validation-for="import_file" class="text-red-500 text-sm"></span>
+</div>
+<input type="hidden" asp-for="score" />
+<input type="hidden" asp-for="default_execution_time" />
+<input type="hidden" asp-for="default_memory_limit" />
+
+
+<script>
+    $(document).ready(function () {
+        document.querySelector("#importTestcaseBtn").addEventListener("click", function(event){
+            // const problemsDataInput = document.getElementById("problemsData");
+            event.preventDefault();
+
+            const form = event.target.closest("form");
+            const formData = new FormData(form);
+
+            fetch("@Url.Action("ImportTestcases", "ContestManagement")", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    const importedTestcases = data.testcases;
+
+                    testcasesArray.push(...importedTestcases);
+
+                    // problemsDataInput.value = JSON.stringify(problemsArray);
+                    fetchTestcasesTabWithPage(1, 1000);
+
+                    closeModal("testcaseImportModal");
+                } else {
+                    displayValidationErrors("testcaseImportModal", data.formErrors);
+                }
+            })
+            .catch(error => console.error("Error submitting form:", error));
+        })
+    })
+</script>

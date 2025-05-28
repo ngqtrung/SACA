@@ -1,0 +1,267 @@
+﻿@using SACA_Common.DTOs
+@using SACA_Common.DTOs.Account.Response
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model PagedResponse<SACA_Common.DTOs.Account.Response.AccountTableView>
+@section BootstrapStyles {
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+}
+@{
+    var contestId = ViewBag.ContestId;
+}
+<form id="sendMailForm" method="post" asp-controller="ContestManagement" asp-action="SendMailInvite">
+    <input type="hidden" name="contestId" value="@ViewBag.ContestId" />
+    <input type="hidden" name="account_ids" id="accountIdsInput" />
+</form>
+<form id="memberTableForm" method="post" action="@Url.Action("BulkDeleteMember")" class="bg-white p-6 rounded">
+    <table class="table table-auto w-full bg-white text-black">
+        <caption class="caption-top text-lg font-semibold text-gray-800">
+            <div class="flex justify-between items-center">
+                <div>
+                    @if (Convert.ToBoolean(ViewData["IsMembersDrafted"]) == false)
+                    {
+                        @:Members Table
+                    }
+                    else
+                    {
+                        @:Drafted Version of Members Table (Unpaginated).
+                        <span class="block text-sm text-red-600 font-medium mt-1">
+                            ⚠ Warning: Changes will not be saved until you save the contest. Reloading or exiting this page will result in data loss.
+                        </span>
+                    }
+                </div>
+                @if (!string.IsNullOrEmpty((string?)ViewData["ContestId"]) && ((string?)ViewData["ContestId"]) != "null" && ((string?)ViewData["ContestId"]) != "undefined")
+                {
+                    @* <a href="@Url.Action("SendMailInvite", new { contestId = @ViewBag.ContestId })"
+                       class="bg-lime-400 text-gray-900 py-2 px-3 rounded font-semibold whitespace-nowrap ml-4">
+                        Send invitation email
+                    </a> *@
+
+                    <button id="sendMailInviteBtn"
+                            type="button"
+                            class="bg-lime-400 text-gray-900 py-1 px-2 rounded text-base font-semibold whitespace-nowrap ml-4">
+                        Send invitation email
+                    </button>
+                    
+                }
+
+            </div>
+        </caption>
+
+
+        <thead class="table-header-group">
+            <tr class="table-row text-left bg-gray-100">
+                <th class="w-4 border-r border-gray-300 px-3 py-2">
+                    <input type="checkbox" id="selectMemberAll">
+                </th>
+                <th class="w-4 border-r border-gray-300 px-3 py-2">#</th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new AccountTableView().email)
+                </th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new AccountTableView().roll_number)
+                </th>
+                <th class="w-48 border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new AccountTableView().fullname)
+                </th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new AccountTableView().username)
+                </th>
+                <th class="w-48 border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new AccountTableView().last_login)
+                </th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new AccountTableView().invitation_email_sent)
+                </th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new AccountTableView().status)
+                </th>
+                @if (!(ViewData["IsViewOnly"] as bool? ?? false))
+                {
+                    <th class="w-8 border-r border-gray-300 px-3 py-2">Action</th>
+                }
+            </tr>
+        </thead>
+        <tbody class="table-row-group">
+            @if (Model == null || Model.Items == null || !Model.Items.Any())
+            {
+                <tr><td colspan="9">No members added yet.</td></tr>
+            }
+            else
+            {
+                var itemNumber = 0;
+                @foreach (var item in Model.Items)
+                {
+                    itemNumber++;
+                    <tr class="table-row border-b"
+                        data-id="@item.id"
+                        data-temp_id="@(item.id != null ? item.id : (itemNumber - 1))"
+                        data-fullname="@item.fullname"
+                        data-email="@item.email"
+                        data-username="@item.username"
+                        data-password="@item.password"
+                        data-roll_number="@item.roll_number"
+                        data-student_code="@item.student_code"
+                        data-invitation_email_sent="@item.invitation_email_sent"
+                    >
+                        <td class="px-3 py-2">
+                            <input type="checkbox" name="selectedIds" value="@item.id" class="selectMemberCheckbox">
+                        </td>
+                        <td class="px-3 py-2">@itemNumber</td>
+                        <td class="px-3 py-2">
+                            <a href="javascript:void(0)" class="detailMember text-blue-500">
+                                @Html.DisplayFor(modelItem => item.email)
+                            </a>
+                        </td>
+                        <td class="px-3 py-2">
+                            @Html.DisplayFor(modelItem => item.roll_number)
+                        </td>
+                        <td class="px-3 py-2">
+                            @Html.DisplayFor(modelItem => item.fullname)
+                        </td>
+                        <td class="px-3 py-2">
+                            @(item.username != null && item.username.Length != 0 ? item.username : "N/A")
+                        </td>
+                        <td class="px-3 py-2">
+                            @(item.last_login != null ? item.last_login?.ToString("dd-MM-yyyy HH:mm:ss") : "N/A")
+                        </td>
+                        <td class="px-3 py-2">
+                            @if (item.invitation_email_sent)
+                            {
+                                <span class="inline-block px-2 py-0.5 text-xs font-semibold text-green-700 bg-green-100 rounded">
+                                    Sent
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="inline-block px-2 py-0.5 text-xs font-semibold text-red-700 bg-red-100 rounded">
+                                    Not Sent
+                                </span>
+                            }
+                        </td>
+                        <td class="px-3 py-2 text-center">
+                            <div class="flex items-center gap-x-2">
+                                @if (item.status == 0)
+                                {
+                                    <!-- Inactive (White SVG) -->
+                                    <svg width="6" height="6" viewBox="0 0 6 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="6.0025" height="6.0015" rx="3.00075" fill="#E5E7EB" /> <!-- Light Gray/White -->
+                                    </svg>
+                                    <span class="text-gray-500">Inactive</span>
+                                }
+                                else
+                                {
+                                    <!-- Active (Green SVG) -->
+                                    <svg width="6" height="6" viewBox="0 0 6 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="6.0025" height="6.0015" rx="3.00075" fill="#A0D911" />
+                                    </svg>
+                                    <span class="text-green-600">Active</span>
+                                }
+                            </div>
+                        </td>
+                        @if (!(ViewData["IsViewOnly"] as bool? ?? false))
+                        {
+                            <td class="px-3 py-2">
+                                <div class="flex items-center justify-content-center space-x-2">
+                                    <a href="javascript:void(0)" class="editMember text-orange-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                        </svg>
+                                    </a>
+                                    <a href="javascript:void(0)" class="deleteMember text-red-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <div class="w-full">
+        @if (Convert.ToBoolean(ViewData["IsMembersDrafted"]) == false)
+        {
+            @Html.PagedListPager(
+                     new StaticPagedList<AccountTableView>(Model?.Items ?? new List<AccountTableView>(), Model.page_index, Model.page_size, Model.total_items),
+                     page => $"javascript:fetchMembersTabWithPage({page});",
+                     new PagedListRenderOptions
+        {
+            DisplayLinkToFirstPage = PagedListDisplayMode.Never,
+            DisplayLinkToLastPage = PagedListDisplayMode.Never,
+            DisplayLinkToPreviousPage = PagedListDisplayMode.Never,
+            DisplayLinkToNextPage = PagedListDisplayMode.Never,
+            DisplayItemSliceAndTotal = true,
+            ContainerDivClasses = new[] { "flex justify-end mt-4 text-black" },
+            MaximumPageNumbersToDisplay = 5,
+            UlElementClasses = new[] { "pagination" },
+            LiElementClasses = new string[] { "page-item" },
+            PageClasses = new string[] { "page-link" },
+        }
+                     )
+        }
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        const detailButtons = document.querySelectorAll(".detailMember");
+        detailButtons.forEach(button => {
+            button.addEventListener("click", (event) => {
+                let row = event.currentTarget.closest("tr");
+                let url = '@Url.Action("OpenMembersDetailModal", "ContestManagement")';
+                let modalId = "memberDetailModal";
+                openEditModal(row, url, modalId);
+            });
+        });
+
+        const editButtons = document.querySelectorAll(".editMember");
+        editButtons.forEach(button => {
+            button.addEventListener("click", (event) => {
+                let row = event.currentTarget.closest("tr");
+                let url = '@Url.Action("OpenMembersModal", "ContestManagement")';
+                let modalId = "memberAddOrUpdateModal";
+                openEditModal(row, url, modalId);
+            });
+        });
+
+        const deleteButtons = document.querySelectorAll(".deleteMember");
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", async (event) => {
+                let row = event.currentTarget.closest("tr");
+                if (!row) return;
+
+                let temp_id = row.dataset.temp_id;
+                if (!temp_id) return;
+                console.log(!id);
+
+                let url = "@Url.Action("OpenDeleteModal", "ContestManagement")";
+                let modalId = "memberDeleteModal";
+                openDeleteModal("Member", temp_id, url, modalId);
+            });
+        });
+
+        document.getElementById("selectMemberAll").addEventListener("change", function () {
+            const isChecked = this.checked;
+            document.querySelectorAll(".selectMemberCheckbox").forEach(cb => cb.checked = isChecked);
+        });
+        document.getElementById("sendMailInviteBtn").addEventListener("click", function () {
+            console.log("Hello")
+            const checkboxes = document.querySelectorAll(".selectMemberCheckbox:checked");
+            const selectedIds = Array.from(checkboxes).map(cb => cb.value).filter(id => id && id !== "null");
+            const hiddenInput = document.getElementById("accountIdsInput");
+
+            if (selectedIds.length === 0) {
+                alert("Please select at least one member to send invitation.");
+                return;
+            } else {
+                hiddenInput.value = selectedIds.join(",");
+                document.getElementById("sendMailForm").submit();
+            }
+        });
+    });
+
+    
+</script>

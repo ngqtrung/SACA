@@ -1,0 +1,269 @@
+﻿@using SACA_Common.DTOs
+@using SACA_Common.DTOs.TestCase.Response
+@using SACA_Common.Enums
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model PagedResponse<SACA_Common.DTOs.TestCase.Response.TestCaseTableView>
+@section BootstrapStyles {
+<link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+}
+
+<div id="testcaseTableForm" class="bg-white rounded">
+    <table class="table-auto w-full bg-white text-black">
+        <caption class="caption-top text-lg font-semibold text-gray-800">
+            @if (Convert.ToBoolean(ViewData["IsTestcasesDrafted"]) == false)
+            {
+                @:Testcases Table
+            }
+            else
+            {
+                @:Drafted Version of Testcases Table (Unpaginated).
+                <span class="block text-sm text-red-600 font-medium mt-1">
+                    ⚠ Warning: Changes will not be saved until you save the contest. Reloading or exiting this page will result in data loss.
+                </span>
+            }
+        </caption>
+        <thead class="table-header-group">
+            <tr class="table-row text-left bg-gray-100">
+                <th class="w-4 border-r border-gray-300 px-3 py-2">#</th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new TestCaseTableView().code)
+                </th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new TestCaseTableView().input)
+                </th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new TestCaseTableView().output)
+                </th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new TestCaseTableView().description)
+                </th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new TestCaseTableView().score)
+                </th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new TestCaseTableView().testcase_type)
+                </th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new TestCaseTableView().execution_time)
+                </th>
+                <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new TestCaseTableView().memory_limit)
+                </th>
+                @* <th class="border-r border-gray-300 px-3 py-2">
+                    @Html.DisplayNameFor(model => new TestCaseTableView().order)
+                </th> *@
+                @if (!(ViewData["IsViewOnly"] as bool? ?? false))
+                {
+                    <th class="w-8 border-r border-gray-300 px-3 py-2">Action</th>
+                }
+            </tr>
+        </thead>
+        <tbody class="table-row-group">
+            @if (Model == null || Model.Items == null || !Model.Items.Any())
+            {
+                <tr><td colspan="11">No testcases added yet.</td></tr>
+            }
+            else
+            {
+                var itemNumber = 0;
+                @foreach (var item in Model.Items)
+                {
+                    itemNumber++;
+                    <tr class="table-row border-b"
+                    data-id="@item.id"
+                    data-temp_id="@(item.id != null ? item.id : (itemNumber-1))"
+                    data-problem_id="@item.problem_id"
+                    data-description="@item.description"
+                    data-code="@item.code"
+                    data-score="@item.score"
+                    data-input="@item.input"
+                    data-output="@item.output"
+                    data-testcase_type="@item.testcase_type"
+                    data-order="@item.order"
+                    data-execution_time="@item.execution_time"
+                    data-memory_limit="@item.memory_limit"
+                    >
+                        <td class="px-3 py-2 text-center align-middle">
+                            @if (itemNumber > 1)
+                            {
+                                <a href="javascript:void(0);" class="moveUp text-blue-500 mb-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />
+                                    </svg>
+                                </a>
+                            }
+                            <span>@itemNumber</span>
+                            @if (itemNumber < Model.Items.Count)
+                            {
+                                <a href="javascript:void(0);" class="moveDown text-blue-500 mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5" />
+                                    </svg>
+                                </a>
+                            }
+                        </td>
+                        <td class="px-3 py-2">
+                            <a onclick="javascript:void(0)" class="detailTestcase text-blue-500">
+                                @Html.DisplayFor(modelItem => item.code)
+                            </a>
+                        </td>
+                        <td class="px-3 py-2 w-5/12">
+                            @Html.Raw(!string.IsNullOrEmpty(item.input)
+                                     ? (item.input.Length > 200 ? item.input.Substring(0, 200) + "..." : item.input.Replace("\n", "<br/>"))
+                                     : "<span class='text-gray-500 text-sm italic'>No input</span>")
+                        </td>
+
+                        <td class="px-3 py-2 w-5/12">
+                            @Html.Raw(!string.IsNullOrEmpty(item.output)
+                                     ? (item.output.Length > 200 ? item.output.Substring(0, 200) + "..." : item.output.Replace("\n", "<br/>"))
+                                     : "<span class='text-gray-500 text-sm italic'>No output</span>")
+                        </td>
+                        <td class="px-3 py-2">
+                            @Html.DisplayFor(modelItem => item.description)
+                        </td>
+                        <td class="scoreDisplay px-3 py-2">
+                            @Html.DisplayFor(modelItem => item.score)
+                        </td>
+                        <td class="px-3 py-2">
+                            @(((eType_TestCase)item.testcase_type).ToString())
+                        </td>
+                        <td class="px-3 py-2">
+                            @Html.DisplayFor(modelItem => item.execution_time)
+                        </td>
+                        <td class="px-3 py-2">
+                            @Html.DisplayFor(modelItem => item.memory_limit)
+                        </td>
+                        @* <td class="px-3 py-2">
+                            @Html.DisplayFor(modelItem => item.order)
+                        </td> *@
+                        @if (!(ViewData["IsViewOnly"] as bool? ?? false))
+                        {
+                            <td class="px-3 py-2">
+                                <div class="flex items-center justify-content-center space-x-2">
+                                    <a class="editTestcase text-orange-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                        </svg>
+                                    </a>
+                                    <a class="deleteTestcase text-red-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <div class="w-full">
+        @if (Convert.ToBoolean(ViewData["IsTestcasesDrafted"]) == false)
+        {
+            @Html.PagedListPager(
+                new StaticPagedList<TestCaseTableView>(Model?.Items ?? new List<TestCaseTableView>(), Model.page_index, Model.page_size, Model.total_items),
+                page => $"javascript:fetchTestcasesTabWithPage({page});",
+                new PagedListRenderOptions
+                {
+                    DisplayLinkToFirstPage = PagedListDisplayMode.Never,
+                    DisplayLinkToLastPage = PagedListDisplayMode.Never,
+                    DisplayLinkToPreviousPage = PagedListDisplayMode.Never,
+                    DisplayLinkToNextPage = PagedListDisplayMode.Never,
+                    DisplayItemSliceAndTotal = true,
+                    ContainerDivClasses = new[] { "flex justify-end mt-4 text-black" },
+                    MaximumPageNumbersToDisplay = 5,
+                    UlElementClasses = new[] { "pagination" },
+                    LiElementClasses = new string[] { "page-item" },
+                    PageClasses = new string[] { "page-link" },
+                }
+            )
+        }
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        const detailButtons = document.querySelectorAll(".detailTestcase");
+        detailButtons.forEach(button => {
+            button.addEventListener("click", async (event) => {
+                let row = event.currentTarget.closest("tr");
+                let url = '@Url.Action("OpenTestcasesDetailModal", "ContestManagement")';
+                let modalId = "testcaseDetailModal";
+                await openEditModal(row, url, modalId, 'sub-modalContainer');
+            });
+        });
+
+        const editButtons = document.querySelectorAll(".editTestcase");
+        editButtons.forEach(button => {
+            button.addEventListener("click", async (event) => {
+                let row = event.currentTarget.closest("tr");
+                let url = `/ContestManagement/OpenTestcasesModal?default_execution_time=${row.dataset.default_execution_time}&default_memory_limit=${row.dataset.default_memory_limit}&score=${row.dataset.score}`
+                let modalId = "testcaseAddOrUpdateModal";
+                await openEditModal(row, url, modalId, 'sub-modalContainer');
+            });
+        });
+
+        const deleteButtons = document.querySelectorAll(".deleteTestcase");
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", async (event) => {
+                let row = event.currentTarget.closest("tr");
+                if (!row) return;
+
+                let temp_id = row.dataset.temp_id;
+                if (!temp_id) return;
+
+                let url = "@Url.Action("OpenDeleteModal", "ContestManagement")";
+                let modalId = "testcaseDeleteModal";
+                openDeleteModal("Testcase", temp_id, url, modalId, 'sub-modalContainer');
+            });
+        });
+
+        const moveUpButtons = document.querySelectorAll(".moveUp");
+        moveUpButtons.forEach(button => {
+            button.addEventListener("click", async (event) => {
+                let row = event.currentTarget.closest("tr");
+                if (!row) return;
+
+                let temp_id = row.dataset.temp_id;
+                if (!temp_id) return;
+
+                moveTestcase(temp_id, "up");
+            });
+        });
+
+        const moveDownButtons = document.querySelectorAll(".moveDown");
+        moveDownButtons.forEach(button => {
+            button.addEventListener("click", async (event) => {
+                let row = event.currentTarget.closest("tr");
+                if (!row) return;
+
+                let temp_id = row.dataset.temp_id;
+                if (!temp_id) return;
+
+                moveTestcase(temp_id, "down");
+            });
+        });
+    });
+
+    function moveTestcase(tempId, direction) {
+        console.log(tempId)
+        const rows = Array.from(document.querySelectorAll("#testcaseTableForm tbody tr[data-temp_id]"));
+        const currentRow = rows.find(r => r.dataset.temp_id === tempId);
+        if (!currentRow) return;
+
+        const currentIndex = rows.indexOf(currentRow);
+        const swapIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+        if (swapIndex < 0 || swapIndex >= rows.length) return;
+
+        tempEle = testcasesArray[swapIndex];
+        testcasesArray[swapIndex] = testcasesArray[currentIndex];
+        testcasesArray[currentIndex] = tempEle;
+
+        fetchTestcasesTabWithPage();
+        @* updateTestcaseOrderUI(); *@
+    }
+</script>

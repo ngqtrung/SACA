@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Global Styles -->
+    <link rel="stylesheet" href="~/css/site.css" />
+
+    <!-- jQuery for easier error handling -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</head>
+<body class="bg-[#1F1E31] text-white">
+    <!-- Header -->
+    <header class="flex justify-between items-center p-6 text-white">
+        <!-- Logo -->
+        <a href="/">
+            <img src="/img/logo.png" alt="Logo" class="h-10">
+        </a>
+
+        <!-- Navigation -->
+        <nav>
+            <ul class="flex space-x-6 w-full">
+                <li><a href="#" class="hover:text-gray-400">Home</a></li>
+                <li><a href="#" class="hover:text-gray-400">Features</a></li>
+                <li><a href="#" class="hover:text-gray-400">Technique</a></li>
+                <li><a href="#" class="hover:text-gray-400">Support</a></li>
+                <li><a href="#" class="hover:text-gray-400">News</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Error Notification -->
+    <div id="error-message" class="hidden fixed top-6 left-1/2 transform -translate-x-1/2 bg-red-500 text-white p-4 rounded-lg shadow-lg text-center">
+        <span id="error-text"></span>
+        <button onclick="$('#error-message').fadeOut()" class="ml-2 text-lg font-bold">&times;</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-4">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-gray-400 mt-10 p-6">
+        <p>Ant Design Pro &bull; Ant Design</p>
+        <p>Copyright ©2020 Produced by Ant Finance Experience Technology Department</p>
+    </footer>
+
+    <!-- Help Icon -->
+    <div class="fixed bottom-6 right-6 bg-gray-700 text-white p-3 rounded-full cursor-pointer hover:bg-gray-600">
+        ?
+    </div>
+
+    <!-- JavaScript for API Error Handling -->
+    <script>
+        $(document).ready(function () {
+            var errorMessage = "@Html.Raw(ViewBag.APIErrorMessage)";
+            if (errorMessage && errorMessage.trim() !== "") {
+                $("#error-text").text(errorMessage);
+                $("#error-message").fadeIn();
+                setTimeout(() => $("#error-message").fadeOut(), 5000);
+            }
+        });
+    </script>
+</body>
+</html>

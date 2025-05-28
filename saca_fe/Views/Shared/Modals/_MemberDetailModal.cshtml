@@ -1,0 +1,48 @@
+﻿@{
+    Layout = "~/Views/Shared/Modals/_BaseModal.cshtml";
+    ViewData["ModalId"] = "memberDetailModal";
+    ViewData["Title"] =  "Detail Member Modal";
+    ViewData["Size"] = "lg";
+}
+@model SACA_Common.DTOs.Account.Response.AccountFormView
+<div id="">
+    <div class="grid grid-cols-3 gap-4 text-black bg-white p-6 rounded">
+        <input type="hidden" asp-for="id" value="@(ViewData["Action"] as string != "CreateMember" ? Model.id : null)" />
+
+        <!-- Email -->
+        <div class="flex flex-col">
+            <label asp-for="email" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="email" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- RollNumber -->
+        <div class="flex flex-col">
+            <label asp-for="roll_number" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="roll_number" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Student Code -->
+        <div class="flex flex-col">
+            <label asp-for="student_code" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="student_code" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Fullname -->
+        <div class="flex flex-col">
+            <label asp-for="fullname" class="text-gray-700 font-medium required-field"></label>
+            <input asp-for="fullname" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Username -->
+        <div class="flex flex-col">
+            <label asp-for="username" class="text-gray-700 font-medium"></label>
+            <input asp-for="username" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+
+        <!-- Password -->
+        <div class="flex flex-col">
+            <label asp-for="password" class="text-gray-700 font-medium"></label>
+            <input asp-for="password" class="border border-gray-400 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" disabled />
+        </div>
+    </div>
+</div>

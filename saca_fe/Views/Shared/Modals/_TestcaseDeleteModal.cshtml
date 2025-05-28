@@ -1,0 +1,40 @@
+﻿@{
+    Layout = "~/Views/Shared/Modals/_BaseModal.cshtml";
+    ViewData["ModalId"] = "testcaseDeleteModal";
+    ViewData["Title"] = "Are you sure you want to delete this testcase?";
+    ViewData["SubmitButtonId"] = "deleteTestcaseBtn";
+    ViewData["ShowSubmitButton"] = true;
+}
+
+<script>
+    $(document).ready(function () {
+        document.querySelector("#deleteTestcaseBtn").addEventListener("click", function(){
+            const problemIndex = document.getElementById("problem_index").getAttribute("value");
+            deleteTestcase('@ViewData["TestcaseID"]', problemIndex);
+        })
+    });
+
+    function deleteTestcase(testcaseID, problemIndex) {
+        problemsArray = problemsArray.map((m, index) => {
+            if (index == problemIndex) {
+                testcasesArray = m.test_cases
+                    .filter((tc, tcIndex) => {
+                        if(tc.id == null)
+                            return tcIndex != testcaseID;
+                        return tc.id !== testcaseID;
+                    })
+                return {
+                    ...m,
+                    test_cases: testcasesArray
+                };
+            }
+            return m;
+        });
+        // Update hidden input
+        // document.querySelector("#problemsData").value = JSON.stringify(problemsArray);
+        //Update table
+        fetchTestcasesTabWithPage(1, 1000);
+
+        closeModal("testcaseDeleteModal");
+    }
+</script>

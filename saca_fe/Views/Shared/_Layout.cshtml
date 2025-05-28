@@ -1,0 +1,417 @@
+﻿@using SACA_FE.Utils
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    var userInfo = TokenUtils.GetUserInfo(HttpContextAccessor.HttpContext);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+
+    <!-- Bootstrap -->
+    @RenderSection("BootstrapStyles", required: false)
+    @* <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" /> *@
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Global Styles -->
+    <link rel="stylesheet" href="~/css/site.css" />
+
+    <!-- jQuery for easier error handling -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <script src="~/lib/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#tinymce',
+            license_key: 'gpl'
+        });
+    </script>
+    <script src="~/js/site.js"></script>
+    @RenderSection("CSSLib", required: false)
+    @RenderSection("JSLib", required: false)
+</head>
+<body class="text-white bg-[#1F1E31]">
+    <!-- Header -->
+    <header class="top-0 left-0 right-0 bg-white p-2 h-16 fixed z-50 flex items-center justify-between border-b shadow-md">
+        <!-- Logo -->
+        <a href="/">
+            <img src="/img/logo.png" alt="Logo" class="h-10">
+        </a>
+
+        <!-- Navbar -->
+        <nav class="space-x-6 hidden items-center md:flex">
+            @if (userInfo?.role == "Lecturer")
+            {
+                <a href="/AccountManagement" class="text-gray-700 hover:text-gray-900">
+                    <i class="fas fa-user"></i> Account Management
+                </a>
+                <a href="/ContestManagement" class="text-gray-700 hover:text-gray-900">
+                    <i class="fas fa-home"></i> Contest Management
+                </a>
+                <a href="/Report" class="text-gray-700 hover:text-gray-900">
+                    <i class="fa-solid fa-flag"></i> Report
+                </a>
+                <a href="/GradingMachine" class="text-gray-700 hover:text-gray-900">
+                    <i class="fa-solid fa-graduation-cap"></i> Grading Machine
+                </a>
+                <a href="/Settings" class="text-gray-700 hover:text-gray-900">
+                    <i class="fas fa-cogs"></i> Settings
+                </a>
+            }
+        </nav>
+
+        <!-- Right Icons & User Info -->
+        <div class="space-x-6 flex items-center">
+            <!-- Search Icon -->
+            <button class="text-gray-600 hover:text-gray-800">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <!-- Help Icon -->
+            <button class="text-gray-600 hover:text-gray-800">
+                <i class="fas fa-question-circle"></i>
+            </button>
+
+            <!-- Notification Bell with Badge -->
+            <div class="relative">
+                @if (userInfo.role == "Lecturer")
+                {
+                    <a asp-controller="Notifi" asp-action="Index" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-bell"></i>
+                    </a>
+                }
+                else
+                {
+                    <button onclick="toggleNotifiDropdown()" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-bell"></i>
+                    </button>
+
+                    <div id="notifi-dropdown" class="right-0 mt-2 w-64 bg-white py-2 absolute hidden rounded-lg border shadow-lg">
+                        <div class="px-4 py-2 text-gray-700 border-b font-medium">Thông báo</div>
+                        <div id="notifi-list" class="max-h-60 overflow-y-auto">
+                            <p class="px-4 py-2 text-gray-500">Đang tải...</p>
+                        </div>
+                    </div>
+                }
+
+                <span id="notification-badge" class="-top-2 -right-2 bg-red-500 text-white px-2 absolute hidden rounded-full text-xs font-bold"></span>
+            </div>
+            <!-- User Profile -->
+            <div class="relative">
+                <!-- Avatar & Name -->
+                <div class="space-x-2 flex cursor-pointer items-center" onclick="toggleDropdown()">
+                    <img src="@(userInfo.role == "Lecturer" ? "/img/avatar_lecture.png" : "/img/avatar_user.png")"
+                         alt="User Avatar" class="w-8 h-8 rounded-full">
+                    <span class="text-gray-700 font-medium">@(userInfo.fullname)</span>
+                </div>
+
+                <!-- Dropdown Menu -->
+                <div id="dropdown-menu" class="right-0 mt-2 w-48 bg-white py-2 absolute hidden rounded-lg border shadow-lg">
+                    <a href="@Url.Action("Detail", "Account", new { id = userInfo.user_id })" class="px-4 py-2 text-gray-700 block hover:bg-gray-200">Thông tin cá nhân</a>
+                    <form method="post" asp-controller="Authen" asp-action="Logout">
+                        <button type="submit" class="px-4 py-2 text-gray-700 block w-full text-left hover:bg-gray-200">
+                            Đăng xuất
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+
+            <script>
+                function toggleDropdown() {
+                    document.getElementById("dropdown-menu").classList.toggle("hidden");
+                }
+            </script>
+        </div>
+    </header>
+
+    <!-- Error Notification -->
+    <div id="error-message" class="top-6 -translate-x-1/2 bg-red-500 text-white p-4 z-[9999] fixed left-1/2 hidden transform rounded-lg text-center shadow-lg">
+        <span id="error-text"></span>
+        <button onclick="$('#error-message').fadeOut()" class="ml-2 text-lg font-bold">&times;</button>
+    </div>
+    <!-- Success Notification -->
+    <div id="success-message" class="top-6 -translate-x-1/2 bg-green-500 text-white p-4 z-[9999] fixed left-1/2 hidden transform rounded-lg text-center shadow-lg">
+        <span id="success-text"></span>
+        <button onclick="$('#success-message').fadeOut()" class="ml-2 text-lg font-bold">&times;</button>
+    </div>
+    <div class="flex">
+        <!-- Main Content -->
+        <div class="pt-16 flex-1 transition-all duration-300" id="mainContent">
+            @if (ViewBag.ShowNavTab == true)
+            {
+                <div id="contest-timer" class="container mx-auto px-4 py-2 mb-2 bg-yellow-100 text-yellow-900 rounded font-semibold text-center">
+                    Time remaining: <span id="countdown"></span>
+                </div>
+                <script>
+                    const endTime = new Date("@ViewBag.ContestEndTime").getTime();
+                    const countdownEl = document.getElementById("countdown");
+                    const isOnRankingPage = window.location.pathname.includes("/Contests/@ViewBag.ContestId/Ranking");
+                    console.log(endTime);
+                    const interval = setInterval(() => {
+                        const now = new Date().getTime();
+                        const distance = endTime - now;
+
+                        if (distance <= 0) {
+                            clearInterval(interval);
+                            countdownEl.innerText = "Contest has ended!";
+                            if ("@userInfo.role" == "Student" && !isOnRankingPage) {
+                                alert("Contest has ended! Redirecting to ranking page...");
+                                window.location.href = "/Contests/@ViewBag.ContestId/Ranking";
+                            }
+                            return;
+                        }
+
+                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                        countdownEl.innerText = `${hours}h ${minutes}m ${seconds}s`; 
+                    }, 1000);
+                </script>
+
+
+                <!-- Breadcrumb -->
+                <div class="gap-x-8 mb-2 p-4 container mx-auto flex">
+                    <a href="/Contests/@ViewBag.ContestId" class="tabButton gap-x-1 pb-2 flex items-center font-semibold @(ViewBag.ActiveTab == "problems" ? "border-[#D9F275] text-[#D9F275] border-b" : "")" data-tab="members">
+                        Problem set
+                    </a>
+                    <a href="/Contests/@ViewBag.ContestId/Submit" class="tabButton gap-x-1 pb-2 flex items-center font-semibold @(ViewBag.ActiveTab == "submit-code" ? "border-[#D9F275] text-[#D9F275] border-b" : "")" data-tab="submit-code">
+                        Submit code
+                    </a>
+                    <a href="/Contests/@ViewBag.ContestId/SubmissionHistory" class="tabButton gap-x-1 pb-2 flex items-center font-semibold @(ViewBag.ActiveTab == "submission-history" ? "border-[#D9F275] text-[#D9F275] border-b" : "")" data-tab="submission-history">
+                        Submission History
+                    </a>
+                    <a href="/Contests/@ViewBag.ContestId/Members" class="tabButton gap-x-1 pb-2 flex items-center font-semibold @(ViewBag.ActiveTab == "members" ? "border-[#D9F275] text-[#D9F275] border-b" : "")" data-tab="members">
+                        Members
+                    </a>
+                    <a href="/Contests/@ViewBag.ContestId/Ranking" class="tabButton gap-x-1 pb-2 flex items-center font-semibold @(ViewBag.ActiveTab == "ranking" ? "border-[#D9F275] text-[#D9F275] border-b" : "")" data-tab="ranking">
+                        Ranking
+                    </a>
+                </div>
+            }
+            <main role="main" class="pb-3 p-4 container mx-auto">
+                <div class="py-2">
+                    @RenderSection("Breadcrumb", required: false)
+                </div>
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            const mainContent = document.getElementById('mainContent');
+
+            toggleBtn?.addEventListener('click', () => {
+                // Toggle chiều rộng sidebar
+                sidebar.classList.toggle('w-64');
+                sidebar.classList.toggle('w-16');
+
+                // Toggle padding tương ứng main content
+                mainContent.classList.toggle('pl-64');
+                mainContent.classList.toggle('pl-16');
+
+                // Toggle icon
+                icon.classList.toggle('fa-angle-double-left');
+                icon.classList.toggle('fa-angle-double-right');
+
+                // Ẩn/hiện text trong menu
+                document.querySelectorAll('.sidebar-text').forEach(el => {
+                    el.classList.toggle('hidden');
+                });
+            });
+        });
+    </script>
+
+
+    <!-- Footer -->
+    <footer class="text-gray-400 mt-10 p-6 text-center">
+        <p>Ant Design Pro &bull; Ant Design</p>
+        <p>Copyright ©2020 Produced by Ant Finance Experience Technology Department</p>
+    </footer>
+    <!-- JavaScript for API Error Handling -->
+    <script>
+        $(document).ready(function () {
+            var errorMessage = '@Html.Raw(ViewBag.APIErrorMessage ?? TempData["APIErrorMessage"])';
+            var successMessage = '@Html.Raw(ViewBag.APIMessage ?? TempData["APIMessage"])';
+
+            if (errorMessage && errorMessage.trim() !== "") {
+                $("#error-text").text(errorMessage);
+                $("#error-message").fadeIn();
+                setTimeout(() => $("#error-message").fadeOut(), 5000);
+            }
+
+            if (successMessage && successMessage.trim() !== "") {
+                $("#success-text").text(successMessage);
+                $("#success-message").fadeIn();
+                setTimeout(() => $("#success-message").fadeOut(), 5000);
+            }
+        });
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            startConnection();
+        });
+        async function joinAllContests() {
+            try {
+                const response = await fetch('/Contests/GetUserContests');
+
+                // Check if the response is OK
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                // Parse the JSON directly without the extra text step
+                const contestIds = await response.json();
+
+                // Check if contestIds is an array
+                if (Array.isArray(contestIds)) {
+                    console.log("Contest IDs received:", contestIds);
+
+                    // Join each contest by ID
+                    for (const contestId of contestIds) {
+                        await connection.invoke("JoinContest", contestId);
+                        console.log(`Joined contest: ${contestId}`);
+                    }
+                } else {
+                    console.error("Expected an array of contest IDs but got:", contestIds);
+                }
+            } catch (error) {
+                console.error("Error in joinAllContests:", error);
+            }
+        }
+        async function toggleNotifiDropdown() {
+            let dropdown = document.getElementById("notifi-dropdown");
+            dropdown.classList.toggle("hidden");
+            updateNotificationBadge(0);
+            if (!dropdown.classList.contains("hidden")) {
+                await fetchNotifications();
+                updateNotificationBadge(0);
+            }
+        }
+
+        async function fetchNotifications() {
+            try {
+                const response = await fetch('/Notifi/GetNotifications');
+                const notifications = await response.json();
+                renderNotifications(notifications);
+            } catch (error) {
+                console.error("Error fetching notifications:", error);
+                document.getElementById("notifi-list").innerHTML = '<p class="px-4 py-2 text-red-500">Lỗi tải thông báo</p>';
+            }
+        }
+        function renderNotifications(notifications) {
+            const listContainer = document.getElementById("notifi-list");
+
+            if (notifications.length === 0) {
+                listContainer.innerHTML = '<p class="px-4 py-2 text-gray-500">Không có thông báo nào</p>';
+            } else {
+                listContainer.innerHTML = notifications.map(n => `
+                                        <div class="px-4 py-2 cursor-pointer border-b hover:bg-gray-100">
+                                            <p class="text-gray-800 font-medium">${n.title}</p>
+                                            <p class="text-gray-600 text-sm">${truncateText(n.description, 50)}</p>
+                                        </div>
+                                    `).join('');
+            }
+        }
+        function truncateText(text, maxLength) {
+            return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+        }
+        function updateNotificationBadge(count) {
+            const badge = document.getElementById("notification-badge");
+            if (count > 0) {
+                badge.classList.remove("hidden");
+                badge.innerText = count;
+            } else {
+                badge.classList.add("hidden");
+            }
+        }
+    </script>
+    <!-- Script for modal -->
+    <script src="~/js/modal.js"></script>
+    <script src="~/js/validation.js"></script>
+    <script src="~/js/tab.js"></script>
+
+    <!-- Script for SignalR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl('http://localhost:5000/notificationHub')
+            .configureLogging(signalR.LogLevel.Information)
+            .withAutomaticReconnect()
+            .build();
+
+        async function startConnection() {
+            try {
+                console.log("🔄 Attempting to connect to SignalR...");
+
+                if (connection.state === signalR.HubConnectionState.Disconnected) {
+                    await connection.start();
+                    console.log("✅ SignalR Connected");
+                    joinAllContests();
+                }
+            } catch (err) {
+                console.error("❌ SignalR Connection Error:", err);
+                setTimeout(startConnection, 5000);
+            }
+        }
+
+        connection.onclose(() => {
+            console.warn("⚠️ SignalR Connection Closed. Attempting to reconnect...");
+            setTimeout(startConnection, 5000);
+        });
+
+        connection.on("ReceiveNotification", (notification) => {
+            console.log("🔥 New notification received:", notification);
+            const badge = document.getElementById("notification-badge");
+            let currentCount = parseInt(badge.innerText) || 0;
+            updateNotificationBadge(currentCount + 1);
+        });
+
+    </script>
+    @* script for filter modal *@
+    <script>
+        const filterModal = document.getElementById('filterModal');
+        if(filterModal){
+                function openFilterModal() {
+                    filterModal.classList.remove('hidden');
+                }
+
+                function closeFilterModal() {
+                    filterModal.classList.add('hidden');
+                }
+
+                document.getElementById('filter-btn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openFilterModal();
+                });
+        }
+
+        const exportModal = document.getElementById('exportModal');
+        if(filterModal){
+                function openExportModal() {
+                    exportModal.classList.remove('hidden');
+                }
+
+                function closeExportModal() {
+                    exportModal.classList.add('hidden');
+                }
+
+                document.getElementById('export-btn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openExportModal();
+                });
+        }
+    </script>
+</body>
+</html>
+<partial name="_ValidationScriptsPartial" />
